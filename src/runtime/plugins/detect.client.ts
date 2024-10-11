@@ -1,5 +1,5 @@
 import { browserName, detect, asyncDetect, detectOS, parseUserAgent } from 'detect-browser-es'
-import type { UserAgentDataHints } from '../shared-types/types'
+import type { UserAgentHints } from '../shared-types/types'
 import { defineNuxtPlugin } from '#imports'
 
 export default defineNuxtPlugin({
@@ -9,7 +9,7 @@ export default defineNuxtPlugin({
       provide: {
         browserName: () => browserName(navigator.userAgent),
         detectBrowser: () => detect(navigator.userAgent),
-        detectBrowserAsync: (hints?: UserAgentDataHints[]) => asyncDetect({
+        detectBrowserAsync: (hints?: UserAgentHints[]) => asyncDetect({
           userAgent: navigator.userAgent,
           hints,
         }),
