@@ -288,9 +288,9 @@ function writeClientHintsResponseHeaders(
   const nuxtApp = useNuxtApp()
   const callback = () => {
     const event = useRequestEvent(nuxtApp)
-    Object.entries(headers).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(headers)) {
       appendHeader(event, key, value)
-    })
+    }
   }
   const unhook = nuxtApp.hooks.hookOnce('app:rendered', callback)
   nuxtApp.hooks.hookOnce('app:error', () => {
