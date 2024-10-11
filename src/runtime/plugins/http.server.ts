@@ -1,6 +1,6 @@
 import type { Browser } from 'detect-browser-es'
 import { parseUserAgent } from 'detect-browser-es'
-import { appendHeader, setResponseHeader } from 'h3'
+import { appendHeader } from 'h3'
 import type { ResolvedConfigurationOptions, SSRClientHints, SSRClientHintsConfiguration } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
 import { defineNuxtPlugin, useCookie, useNuxtApp, useRuntimeConfig, useRequestEvent, useRequestHeaders } from '#imports'
