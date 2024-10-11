@@ -50,13 +50,19 @@ export default defineNuxtPlugin({
         })
       }
       // detect browser info
-      state.value.browserInfo = JSON.parse(JSON.stringify(await asyncDetect({
+      const browserInfo = await asyncDetect({
         hints,
         httpHeaders: requestHeaders,
-      })))
+      })
+      if (browserInfo) {
+        state.value.browserInfo = JSON.parse(JSON.stringify(browserInfo))
+      }
     }
     else if (userAgentHeader) {
-      state.value.browserInfo = JSON.parse(JSON.stringify(detect(userAgentHeader)))
+      const browserInfo = detect(userAgentHeader)
+      if (browserInfo) {
+        state.value.browserInfo = JSON.parse(JSON.stringify(browserInfo))
+      }
     }
 
     return {
