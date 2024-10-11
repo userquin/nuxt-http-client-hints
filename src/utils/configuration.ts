@@ -152,7 +152,7 @@ function addClientHintsPlugin(
     write: true,
     getContents() {
       return `
-import { defineNuxtPlugin, readonly } from '#imports'
+import { defineNuxtPlugin, readonly, useState } from '#imports'
 
 export default defineNuxtPlugin({
   name: '${name}',
