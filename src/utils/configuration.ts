@@ -149,10 +149,9 @@ function addClientHintsPlugin(
     filename: `http-client-hints.${mode}.mjs`,
     name,
     mode: `${mode}`,
-    write: true,
+    write: false,
     getContents() {
-      return `
-import { defineNuxtPlugin, readonly, useState } from '#imports'
+      return `import { defineNuxtPlugin, readonly, useState } from '#imports'
 
 export default defineNuxtPlugin({
   name: '${name}',
