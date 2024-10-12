@@ -6,6 +6,7 @@ import type {
 } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
 import { lookupHeader, writeClientHintHeaders, writeHeaders } from './headers'
+import { browserFeatureAvailable } from './features'
 import {
   defineNuxtPlugin,
   useCookie,
@@ -100,31 +101,6 @@ const allowedBrowsers: [browser: Browser, features: BrowserFeatures][] = [
 
 const ClientHeaders = ['Accept-CH', 'Vary', 'Critical-CH']
 
-function browserFeatureAvailable(userAgent: ReturnType<typeof parseUserAgent>, feature: AcceptClientHintsHeadersKey) {
-  if (userAgent == null || userAgent.type !== 'browser')
-    return false
-
-  try {
-    const browserName = userAgent.name
-    const android = userAgent.os?.toLowerCase().startsWith('android') ?? false
-    const versions = userAgent.version.split('.').map(v => Number.parseInt(v))
-    return allowedBrowsers.some(([name, check]) => {
-      if (browserName !== name)
-        return false
-
-      try {
-        return check[feature](android, versions)
-      }
-      catch {
-        return false
-      }
-    })
-  }
-  catch {
-    return false
-  }
-}
-
 function lookupClientHints(
   userAgent: ReturnType<typeof parseUserAgent>,
   criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
@@ -145,21 +121,21 @@ function lookupClientHints(
     return features
 
   if (criticalClientHintsConfiguration.prefersColorScheme)
-    features.prefersColorSchemeAvailable = browserFeatureAvailable(userAgent, 'prefersColorScheme')
+    features.prefersColorSchemeAvailable = browserFeatureAvailable(allowedBrowsers, userAgent, 'prefersColorScheme')
 
   if (criticalClientHintsConfiguration.prefersReducedMotion)
-    features.prefersReducedMotionAvailable = browserFeatureAvailable(userAgent, 'prefersReducedMotion')
+    features.prefersReducedMotionAvailable = browserFeatureAvailable(allowedBrowsers, userAgent, 'prefersReducedMotion')
 
   if (criticalClientHintsConfiguration.prefersReducedTransparency)
-    features.prefersReducedMotionAvailable = browserFeatureAvailable(userAgent, 'prefersReducedTransparency')
+    features.prefersReducedMotionAvailable = browserFeatureAvailable(allowedBrowsers, userAgent, 'prefersReducedTransparency')
 
   if (criticalClientHintsConfiguration.viewportSize) {
-    features.viewportHeightAvailable = browserFeatureAvailable(userAgent, 'viewportHeight')
-    features.viewportWidthAvailable = browserFeatureAvailable(userAgent, 'viewportWidth')
+    features.viewportHeightAvailable = browserFeatureAvailable(allowedBrowsers, userAgent, 'viewportHeight')
+    features.viewportWidthAvailable = browserFeatureAvailable(allowedBrowsers, userAgent, 'viewportWidth')
   }
 
   if (criticalClientHintsConfiguration.width) {
-    features.widthAvailable = browserFeatureAvailable(userAgent, 'width')
+    features.widthAvailable = browserFeatureAvailable(allowedBrowsers, userAgent, 'width')
   }
 
   if (features.viewportWidthAvailable || features.viewportHeightAvailable) {
@@ -173,7 +149,7 @@ function lookupClientHints(
       headers,
     )
     if (mobileHeader)
-      features.devicePixelRatioAvailable = browserFeatureAvailable(userAgent, 'devicePixelRatio')
+      features.devicePixelRatioAvailable = browserFeatureAvailable(allowedBrowsers, userAgent, 'devicePixelRatio')
   }
 
   return features

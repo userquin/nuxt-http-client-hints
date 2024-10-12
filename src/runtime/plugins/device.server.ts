@@ -6,6 +6,7 @@ import type {
 } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
 import { type GetHeaderType, lookupHeader, writeClientHintHeaders, writeHeaders } from './headers'
+import { browserFeatureAvailable } from './features'
 import { defineNuxtPlugin, useRequestHeaders, useRuntimeConfig } from '#imports'
 
 const DeviceClientHintsHeaders: Record<DeviceHints, string> = {
@@ -67,31 +68,6 @@ const allowedBrowsers: [browser: Browser, features: BrowserFeatures][] = [
 
 const ClientHeaders = ['Accept-CH']
 
-function browserFeatureAvailable(userAgent: ReturnType<typeof parseUserAgent>, feature: DeviceClientHintsHeadersKey) {
-  if (userAgent == null || userAgent.type !== 'browser')
-    return false
-
-  try {
-    const browserName = userAgent.name
-    const android = userAgent.os?.toLowerCase().startsWith('android') ?? false
-    const versions = userAgent.version.split('.').map(v => Number.parseInt(v))
-    return allowedBrowsers.some(([name, check]) => {
-      if (browserName !== name)
-        return false
-
-      try {
-        return check[feature](android, versions)
-      }
-      catch {
-        return false
-      }
-    })
-  }
-  catch {
-    return false
-  }
-}
-
 function lookupClientHints(
   userAgent: ReturnType<typeof parseUserAgent>,
   deviceHints: DeviceHints[],
@@ -104,7 +80,7 @@ function lookupClientHints(
     return features
 
   for (const hint of deviceHints) {
-    features[`${hint}Available`] = browserFeatureAvailable(userAgent, hint)
+    features[`${hint}Available`] = browserFeatureAvailable(allowedBrowsers, userAgent, hint)
   }
 
   return features
