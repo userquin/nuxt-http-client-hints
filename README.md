@@ -143,4 +143,6 @@ You can check the source code or the [JSDocs](https://www.jsdocs.io/package/nuxt
 [jsdocs-href]: https://www.jsdocs.io/package/nuxt-http-client-hints
 [license-src]: https://img.shields.io/github/license/userquin/nuxt-http-client-hints.svg?style=flat&colorA=18181B&colorB=F0DB4F
 [license-href]: https://github.com/userquin/nuxt-http-client-hints/blob/main/LICENSE
+[nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt.js
+[nuxt-href]: https://nuxt.com
 
