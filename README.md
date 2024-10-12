@@ -16,6 +16,10 @@ Access and use HTTP Client Hints in your Nuxt application. Detect the client bro
 
 ## HTTP Client hints
 
+> [!WARNING]
+> The [HTTP Client hints headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints) listed below are still in draft and only Chromium based browsers support them: Chrome, Edge, Chromium and Opera.
+
+
 The module includes support for the following HTTP Client hints:
 - [Device Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints)
   - [Device-Memory](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Device-Memory)
@@ -42,9 +46,6 @@ The module includes support for the following HTTP Client hints:
   - [Sec-CH-Prefers-Reduced-Motion](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Motion)
   - [Sec-CH-Prefers-Reduced-Transparency](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Transparency)
 
-
-> [!WARNING]
-> The [HTTP Client hints headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints) listed above are still in draft, and only Chromium based browsers support them: Chrome, Edge, Chromium and Opera.
 
 ## Quick Setup
 
