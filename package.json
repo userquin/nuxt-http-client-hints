@@ -61,5 +61,9 @@
     "typescript": "^5.6.3",
     "vitest": "^2.1.1",
     "vue-tsc": "^2.1.6"
+  },
+  "stackblitz": {
+    "installDependencies": false,
+    "startCommand": "pnpm install && pnpm dev:prepare && pnpm dev"
   }
 }
