@@ -92,7 +92,7 @@ You use the httpClientHints object in your application to access the configurati
 </template>
 ```
 
-or in your modules:
+or in your modules, composables, or other plugins:
 ```js
 // my-module.js
 const clientHints = useNuxtApp().$httpClientHints
