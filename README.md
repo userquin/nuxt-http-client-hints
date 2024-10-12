@@ -1,33 +1,104 @@
-# Nuxt HTTP Client Hints 
+# Nuxt HTTP Client Hints Module
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-My new Nuxt module for doing amazing things.
-
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
-<!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
-<!-- - [📖 &nbsp;Documentation](https://example.com) -->
+Access and use HTTP Client Hints in your Nuxt application. Detect the client browser and the operating system on your server.
 
 ## Features
 
-<!-- Highlight some of the features your module provide here -->
-- ⛰ &nbsp;Foo
-- 🚠 &nbsp;Bar
-- 🌲 &nbsp;Baz
+- 🚀 Browser and Operating System detection: check [detect-browser-es](https://www.npmjs.com/package/detect-browser-es) for more information.
+- 💥 [Device Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints) detection
+- ⚡ [Network Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints) detection
+- ✨ [Critical Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints#critical_client_hints) detection
+
+## HTTP Client hints
+
+The module includes support for the following HTTP Client hints:
+- [Device Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints)
+  - [Device-Memory](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Device-Memory)
+- [Network Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints)
+  - [Save-Data](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Save-Data)
+  - [Downlink](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Downlink)
+  - [ECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ECT)
+  - [RTT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/RTT)
+- [User Agent Hints](https://github.com/WICG/ua-client-hints)
+  - [Sec-CH](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH)
+  - [Sec-CH-UA](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA)
+  - [Sec-CH-UA-Mobile](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Mobile)
+  - [Sec-CH-UA-Platform](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Platform)
+  - [Sec-CH-UA-Arch](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Arch)
+  - [Sec-CH-UA-Model](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Model)
+  - [Sec-CH-UA-Platform-Version](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Platform-Version) 
+  - [Sec-CH-UA-Bitness](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Bitness)
+- [Critical Client Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints#critical_client_hints)
+  - [Sec-CH-Width](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Width)
+  - [Sec-CH-DPR](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-DPR)
+  - [Sec-CH-Viewport-Width](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Viewport-Width)
+  - [Sec-CH-Viewport-Height](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Viewport-Height) 
+  - [Sec-CH-Prefers-Color-Scheme](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Color-Scheme)
+  - [Sec-CH-Prefers-Reduced-Motion](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Motion)
+  - [Sec-CH-Prefers-Reduced-Transparency](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Transparency)
+
+[![WARNING]]
+> The [HTTP Client hints headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints) listed above are still in draft, and only Chromium based browsers support them: Chrome, Edge, Chromium and Opera.
 
 ## Quick Setup
 
 Install the module to your Nuxt application with one command:
 
 ```bash
-npx nuxi module add my-module
+npx nuxi module add nuxt-http-client-hints
+```
+
+Add your configuration to your Nuxt config file:
+
+```js
+httpClientHints: {
+  // Your configuration here
+}
+```
+
+Add your client and server plugins to your Nuxt application and register the corresponding hooks with your configuration:
+
+```js
+// my-plugin.client.js
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.hook('http-client-hints:client-hints', (httpClientHints) => {
+    // Your client logic here
+  })
+})
+```
+
+```js
+// my-plugin.server.js
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.hook('http-client-hints:ssr-client-hints', (httpClientHints) => {
+    // Your server logic here
+  })
+})
+```
+
+You use the httpClientHints object in your application to access the configuration:
+
+```html
+<!-- SomeComponent.vue -->
+<template>
+  <pre>{{ $httpClientHints }}"</pre>
+</template>
+```
+
+or in your modules:
+```js
+// my-module.js
+const clientHints = useNuxtApp().$httpClientHints
 ```
 
 That's it! You can now use HTTP Client Hints in your Nuxt app ✨
 
+You can check the source code or the [JSDocs](https://www.jsdocs.io/package/nuxt-http-client-hints) for more information.
 
 ## Contribution
 
@@ -36,40 +107,40 @@ That's it! You can now use HTTP Client Hints in your Nuxt app ✨
   
   ```bash
   # Install dependencies
-  npm install
+  pnpm install
   
   # Generate type stubs
-  npm run dev:prepare
+  pnpm run dev:prepare
   
   # Develop with the playground
-  npm run dev
+  pnpm run dev
   
   # Build the playground
-  npm run dev:build
+  pnpm run dev:build
   
   # Run ESLint
-  npm run lint
+  pnpm run lint
   
   # Run Vitest
-  npm run test
-  npm run test:watch
-  
-  # Release new version
-  npm run release
+  pnpm run test
+  pnpm run test:watch
   ```
 
 </details>
 
 
+## License
+
+[MIT](./LICENSE) License © 2024-PRESENT [Joaquín Sánchez](https://github.com/userquin)
+
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/my-module/latest.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-version-href]: https://npmjs.com/package/my-module
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-downloads-href]: https://npmjs.com/package/my-module
+[npm-version-src]: https://img.shields.io/npm/v/nuxt-http-client-hints?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-version-href]: https://npmjs.com/package/nuxt-http-client-hints
+[npm-downloads-src]: https://img.shields.io/npm/dm/nuxt-http-client-hints?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-downloads-href]: https://npmjs.com/package/nuxt-http-client-hints
+[jsdocs-src]: https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=18181B&colorB=F0DB4F
+[jsdocs-href]: https://www.jsdocs.io/package/nuxt-http-client-hints
+[license-src]: https://img.shields.io/github/license/userquin/nuxt-http-client-hints.svg?style=flat&colorA=18181B&colorB=F0DB4F
+[license-href]: https://github.com/userquin/nuxt-http-client-hints/blob/main/LICENSE
 
-[license-src]: https://img.shields.io/npm/l/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[license-href]: https://npmjs.com/package/my-module
-
-[nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt.js
-[nuxt-href]: https://nuxt.com
