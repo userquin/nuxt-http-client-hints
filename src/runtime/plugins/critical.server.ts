@@ -2,7 +2,7 @@ import type { Browser } from 'detect-browser-es'
 import { parseUserAgent } from 'detect-browser-es'
 import type {
   ResolvedHttpClientHintsOptions,
-  CriticalClientHints,
+  CriticalInfo,
   CriticalClientHintsConfiguration,
 } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
@@ -54,9 +54,9 @@ export default defineNuxtPlugin({
     const clientHintsRequest = collectClientHints(userAgent, httpClientHints.critical!, requestHeaders)
     // 3. write client hints response headers
     writeClientHintsResponseHeaders(clientHintsRequest, httpClientHints.critical!)
-    state.value.clientHints = clientHintsRequest
+    state.value.critical = clientHintsRequest
     // 4. send the theme cookie to the client when required
-    state.value.clientHints.colorSchemeCookie = writeThemeCookie(
+    state.value.critical.colorSchemeCookie = writeThemeCookie(
       clientHintsRequest,
       httpClientHints.critical!,
     )
@@ -134,7 +134,7 @@ function lookupClientHints(
   criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
   headers: { [key in Lowercase<string>]?: string | undefined },
 ) {
-  const features: CriticalClientHints = {
+  const features: CriticalInfo = {
     firstRequest: true,
     prefersColorSchemeAvailable: false,
     prefersReducedMotionAvailable: false,
@@ -189,7 +189,7 @@ function collectClientHints(
   headers: { [key in Lowercase<string>]?: string | undefined },
 ) {
   // collect client hints
-  const hints: CriticalClientHints = lookupClientHints(userAgent, criticalClientHintsConfiguration, headers)
+  const hints = lookupClientHints(userAgent, criticalClientHintsConfiguration, headers)
 
   if (criticalClientHintsConfiguration.prefersColorScheme) {
     if (criticalClientHintsConfiguration.prefersColorSchemeOptions) {
@@ -317,49 +317,49 @@ function collectClientHints(
 }
 
 function writeClientHintsResponseHeaders(
-  criticalClientHints: CriticalClientHints,
+  criticalInfo: CriticalInfo,
   criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
 ) {
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Critical-CH
   // Each header listed in the Critical-CH header should also be present in the Accept-CH and Vary headers.
   const headers: Record<string, string[]> = {}
 
-  if (criticalClientHintsConfiguration.prefersColorScheme && criticalClientHints.prefersColorSchemeAvailable)
+  if (criticalClientHintsConfiguration.prefersColorScheme && criticalInfo.prefersColorSchemeAvailable)
     writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.prefersColorScheme, headers)
 
-  if (criticalClientHintsConfiguration.prefersReducedMotion && criticalClientHints.prefersReducedMotionAvailable)
+  if (criticalClientHintsConfiguration.prefersReducedMotion && criticalInfo.prefersReducedMotionAvailable)
     writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.prefersReducedMotion, headers)
 
-  if (criticalClientHintsConfiguration.prefersReducedTransparency && criticalClientHints.prefersReducedTransparencyAvailable)
+  if (criticalClientHintsConfiguration.prefersReducedTransparency && criticalInfo.prefersReducedTransparencyAvailable)
     writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.prefersReducedTransparency, headers)
 
-  if (criticalClientHintsConfiguration.viewportSize && criticalClientHints.viewportHeightAvailable && criticalClientHints.viewportWidthAvailable) {
+  if (criticalClientHintsConfiguration.viewportSize && criticalInfo.viewportHeightAvailable && criticalInfo.viewportWidthAvailable) {
     writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.viewportHeight, headers)
     writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.viewportWidth, headers)
-    if (criticalClientHints.devicePixelRatioAvailable)
+    if (criticalInfo.devicePixelRatioAvailable)
       writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.devicePixelRatio, headers)
   }
 
-  if (criticalClientHintsConfiguration.width && criticalClientHints.widthAvailable)
+  if (criticalClientHintsConfiguration.width && criticalInfo.widthAvailable)
     writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.width, headers)
 
   writeHeaders(headers)
 }
 
 function writeThemeCookie(
-  criticalClientHints: CriticalClientHints,
+  criticalInfo: CriticalInfo,
   criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
 ) {
   if (!criticalClientHintsConfiguration.prefersColorScheme || !criticalClientHintsConfiguration.prefersColorSchemeOptions)
     return
 
   const cookieName = criticalClientHintsConfiguration.prefersColorSchemeOptions.cookieName
-  const themeName = criticalClientHints.colorSchemeFromCookie ?? criticalClientHintsConfiguration.prefersColorSchemeOptions.defaultTheme
+  const themeName = criticalInfo.colorSchemeFromCookie ?? criticalClientHintsConfiguration.prefersColorSchemeOptions.defaultTheme
   const path = criticalClientHintsConfiguration.prefersColorSchemeOptions.baseUrl
 
   const date = new Date()
   const expires = new Date(date.setDate(date.getDate() + 365))
-  if (!criticalClientHints.firstRequest || !criticalClientHintsConfiguration.reloadOnFirstRequest) {
+  if (!criticalInfo.firstRequest || !criticalClientHintsConfiguration.reloadOnFirstRequest) {
     useCookie(cookieName, {
       path,
       expires,

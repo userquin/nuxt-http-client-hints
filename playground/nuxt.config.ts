@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     detectBrowser: true,
     detectOS: 'windows-11',
     device: 'memory',
+    network: ['savedata', 'downlink', 'ect', 'rtt'],
     critical: {
       width: true,
       viewportSize: true,

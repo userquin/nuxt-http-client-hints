@@ -1,7 +1,7 @@
 import type { Browser } from 'detect-browser-es'
 import { parseUserAgent } from 'detect-browser-es'
 import type {
-  DeviceClientHints,
+  DeviceInfo,
   DeviceHints,
   ResolvedHttpClientHintsOptions,
 } from '../shared-types/types'
@@ -46,7 +46,7 @@ export default defineNuxtPlugin({
     const clientHintsRequest = collectClientHints(userAgent, httpClientHints.device!, requestHeaders)
     // 3. write client hints response headers
     writeClientHintsResponseHeaders(clientHintsRequest, httpClientHints.device!)
-    state.value.deviceInfo = clientHintsRequest
+    state.value.device = clientHintsRequest
   },
 })
 
@@ -99,8 +99,8 @@ function browserFeatureAvailable(userAgent: ReturnType<typeof parseUserAgent>, f
 function lookupClientHints(
   userAgent: ReturnType<typeof parseUserAgent>,
   deviceHints: DeviceHints[],
-) {
-  const features: DeviceClientHints = {
+): DeviceInfo {
+  const features: DeviceInfo = {
     memoryAvailable: false,
   }
 
@@ -129,7 +129,6 @@ function collectClientHints(
         AcceptClientHintsRequestHeaders[hint],
         headers,
       )
-      console.log({ hint, value })
       if (typeof value !== 'undefined') {
         hints[hint] = value as typeof hints[typeof hint]
       }
@@ -140,13 +139,13 @@ function collectClientHints(
 }
 
 function writeClientHintsResponseHeaders(
-  deviceClientHints: DeviceClientHints,
+  deviceInfo: DeviceInfo,
   deviceHints: DeviceHints[],
 ) {
   const headers: Record<string, string[]> = {}
 
   for (const hint of deviceHints) {
-    if (deviceClientHints[`${hint}Available`]) {
+    if (deviceInfo[`${hint}Available`]) {
       writeClientHintHeaders(ClientHeaders, DeviceClientHintsHeaders[hint], headers)
     }
   }

@@ -63,13 +63,13 @@ export default defineNuxtPlugin({
         httpHeaders: requestHeaders,
       })
       if (browserInfo) {
-        state.value.browserInfo = JSON.parse(JSON.stringify(browserInfo))
+        state.value.browser = JSON.parse(JSON.stringify(browserInfo))
       }
     }
     else if (userAgentHeader) {
       const browserInfo = detect(userAgentHeader)
       if (browserInfo) {
-        state.value.browserInfo = JSON.parse(JSON.stringify(browserInfo))
+        state.value.browser = JSON.parse(JSON.stringify(browserInfo))
       }
     }
 

@@ -7,13 +7,13 @@ export type UserAgentHints = 'architecture' | 'bitness' | 'model' | 'platformVer
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints
  */
-export type NetworkHints = 'Save-Data' | 'Downlink' | 'ECT' | 'RTT'
+export type NetworkHints = 'savedata' | 'downlink' | 'ect' | 'rtt'
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints
  */
 export type DeviceHints = 'memory'
 
-export interface CriticalClientHintsRequestFeatures {
+export interface CriticalInfoFeatures {
   firstRequest: boolean
   prefersColorSchemeAvailable: boolean
   prefersReducedMotionAvailable: boolean
@@ -23,7 +23,7 @@ export interface CriticalClientHintsRequestFeatures {
   widthAvailable: boolean
   devicePixelRatioAvailable: boolean
 }
-export interface CriticalClientHints extends CriticalClientHintsRequestFeatures {
+export interface CriticalInfo extends CriticalInfoFeatures {
   prefersColorScheme?: 'dark' | 'light' | 'no-preference'
   prefersReducedMotion?: 'no-preference' | 'reduce'
   prefersReducedTransparency?: 'no-preference' | 'reduce'
@@ -35,11 +35,25 @@ export interface CriticalClientHints extends CriticalClientHintsRequestFeatures 
   colorSchemeCookie?: string
 }
 
-export interface DeviceClientHintsRequestFeatures {
+export interface DeviceInfoFeatures {
   memoryAvailable: boolean
 }
-export interface DeviceClientHints extends DeviceClientHintsRequestFeatures {
+export interface DeviceInfo extends DeviceInfoFeatures {
   memory?: number
+}
+
+export interface NetworkInfoFeatures {
+  savedataAvailable: boolean
+  downlinkAvailable: boolean
+  ectAvailable: boolean
+  rttAvailable: boolean
+}
+export type NetworkECT = 'slow-2g' | '2g' | '3g' | '4g'
+export interface NetworkInfo extends NetworkInfoFeatures {
+  savedata?: 'on'
+  downlink?: number
+  ect?: NetworkECT
+  rtt?: number
 }
 
 export interface BrowserInfo {
@@ -51,15 +65,12 @@ export interface BrowserInfo {
   ua?: UserAgentDataInfo | null
 }
 
-export interface DeviceInfo {
-  memory?: number
-}
-
 export interface HttpClientHintsState {
-  browserInfo?: BrowserInfo
-  deviceInfo?: DeviceInfo
-  userAgentData?: UserAgentDataInfo
-  clientHints?: CriticalClientHints
+  browser?: BrowserInfo
+  device?: DeviceInfo
+  network?: NetworkInfo
+  userAgent?: UserAgentDataInfo
+  critical?: CriticalInfo
 }
 
 export interface CriticalClientHintsConfiguration {
