@@ -22,7 +22,7 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/types.d.ts",
+      "types": "./dist/types.d.mts",
       "default": "./dist/module.mjs"
     },
     "./package.json": "./package.json"
@@ -33,7 +33,7 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "nuxt-module-build build",
+    "prepack": "nuxt-module-build prepare && nuxt-module-build build",
     "dev": "nuxi dev playground",
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
@@ -58,7 +58,7 @@
     "changelogen": "^0.5.7",
     "eslint": "^9.11.0",
     "nuxt": "^3.13.0",
-    "typescript": "latest",
+    "typescript": "^5.6.3",
     "vitest": "^2.1.1",
     "vue-tsc": "^2.1.6"
   }
