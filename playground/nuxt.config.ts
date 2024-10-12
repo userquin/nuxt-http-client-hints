@@ -1,14 +1,15 @@
 export default defineNuxtConfig({
+  compatibilityDate: '2024-10-11',
+  devtools: { enabled: true },
   modules: ['../src/module'],
 
   httpClientHints: {
     detectBrowser: true,
     detectOS: 'windows-11',
-    http: {
+    critical: {
+      width: true,
       prefersColorScheme: true,
     },
   },
 
-  devtools: { enabled: true },
-  compatibilityDate: '2024-10-11',
 })

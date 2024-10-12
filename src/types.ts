@@ -1,16 +1,13 @@
 import type {
   DeviceHints,
   NetworkHints,
-  SSRClientHintsConfiguration,
+  CriticalClientHintsConfiguration,
   UserAgentHints,
 } from './runtime/shared-types/types'
 
-export interface HttpClientHints {
+export interface HttpClientHintsOptions {
   /**
    * Enable browser.
-   *
-   * This can be auto-enabled when enabling SSR and using some client hints like HTTP Client Hints.
-   *
    * @default false
    */
   detectBrowser?: boolean
@@ -34,8 +31,9 @@ export interface HttpClientHints {
    */
   device?: true | DeviceHints | DeviceHints[]
   /**
-   * Enable HTTP Client Hints.
+   * Enable Critical Client Hints.
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints#critical_client_hints
    * @see https://wicg.github.io/responsive-image-client-hints
    */
-  http?: SSRClientHintsConfiguration
+  critical?: CriticalClientHintsConfiguration
 }

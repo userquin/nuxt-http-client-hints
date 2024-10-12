@@ -6,10 +6,16 @@ import {
   parseUserAgent,
   serverResponseHeadersForUserAgentHints,
 } from 'detect-browser-es'
-import { appendHeader, appendResponseHeaders, setResponseHeader } from 'h3'
-import type { ResolvedConfigurationOptions, UserAgentHints } from '../shared-types/types'
+import { appendHeader } from 'h3'
+import type { ResolvedHttpClientHintsOptions, UserAgentHints } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
-import { defineNuxtPlugin, useNuxtApp, useRequestEvent, useRequestHeaders, useRuntimeConfig } from '#imports'
+import {
+  defineNuxtPlugin,
+  useNuxtApp,
+  useRequestEvent,
+  useRequestHeaders,
+  useRuntimeConfig,
+} from '#imports'
 
 export default defineNuxtPlugin({
   name: 'http-client-hints:detect-server:plugin',
@@ -19,7 +25,7 @@ export default defineNuxtPlugin({
   dependsOn: ['http-client-hints:init-server:plugin'],
   async setup() {
     const state = useHttpClientHintsState()
-    const httpClientHints = useRuntimeConfig().public.httpClientHints as ResolvedConfigurationOptions
+    const httpClientHints = useRuntimeConfig().public.httpClientHints as ResolvedHttpClientHintsOptions
     const requestHeaders = useRequestHeaders()
 
     const userAgentHeader = requestHeaders['user-agent']
@@ -37,9 +43,11 @@ export default defineNuxtPlugin({
         const nuxtApp = useNuxtApp()
         const callback = () => {
           const event = useRequestEvent(nuxtApp)
-          for (const [key, value] of Object.entries(headers)) {
-            if (value) {
-              appendHeader(event, key, value)
+          if (event) {
+            for (const [key, value] of Object.entries(headers)) {
+              if (value) {
+                appendHeader(event, key, value)
+              }
             }
           }
         }

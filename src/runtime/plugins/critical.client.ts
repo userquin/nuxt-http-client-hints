@@ -2,7 +2,7 @@ import { useHttpClientHintsState } from './state'
 import { defineNuxtPlugin } from '#imports'
 
 export default defineNuxtPlugin({
-  name: 'http-client-hints:http-client:plugin',
+  name: 'http-client-hints:critical-client:plugin',
   enforce: 'pre',
   parallel: true,
   // @ts-expect-error missing at build time

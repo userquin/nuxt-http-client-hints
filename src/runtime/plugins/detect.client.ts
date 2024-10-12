@@ -3,7 +3,7 @@ import type { UserAgentHints } from '../shared-types/types'
 import { defineNuxtPlugin } from '#imports'
 
 export default defineNuxtPlugin({
-  name: 'http-client-hints:detect:plugin',
+  name: 'http-client-hints:detect-client:plugin',
   setup() {
     return {
       provide: {

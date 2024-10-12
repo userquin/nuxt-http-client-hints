@@ -1,12 +1,12 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { Resolver } from '@nuxt/kit'
 import { addPlugin, addPluginTemplate } from '@nuxt/kit'
-import type { HttpClientHints } from '../types'
-import type { ResolvedConfigurationOptions } from '../runtime/shared-types/types'
+import type { HttpClientHintsOptions } from '../types'
+import type { ResolvedHttpClientHintsOptions } from '../runtime/shared-types/types'
 
-type PluginType = 'detect' | 'user-agent' | 'network' | 'device' | 'http'
+type PluginType = 'detect' | 'user-agent' | 'network' | 'device' | 'critical'
 
-export function configure(resolver: Resolver, options: HttpClientHints, nuxt: Nuxt) {
+export function configure(resolver: Resolver, options: HttpClientHintsOptions, nuxt: Nuxt) {
   const runtimeDir = resolver.resolve('./runtime')
 
   nuxt.options.build.transpile.push(runtimeDir)
@@ -22,7 +22,7 @@ export function configure(resolver: Resolver, options: HttpClientHints, nuxt: Nu
     return
   }
 
-  const resolvedOptions: ResolvedConfigurationOptions = {
+  const resolvedOptions: ResolvedHttpClientHintsOptions = {
     detectBrowser: false,
     detectOS: false,
     userAgent: [],
@@ -36,7 +36,7 @@ export function configure(resolver: Resolver, options: HttpClientHints, nuxt: Nu
     userAgent,
     network,
     device,
-    http,
+    critical,
   } = options
   if (userAgent) {
     if (userAgent === true) {
@@ -87,9 +87,9 @@ export function configure(resolver: Resolver, options: HttpClientHints, nuxt: Nu
       dependsOn.push('device')
     }
   }
-  if (http) {
-    resolvedOptions.http = http
-    dependsOn.push('http')
+  if (critical) {
+    resolvedOptions.critical = critical
+    dependsOn.push('critical')
   }
 
   if (!dependsOn.length) {
@@ -109,7 +109,7 @@ export function configure(resolver: Resolver, options: HttpClientHints, nuxt: Nu
   addPlugin(resolver.resolve(runtimeDir, 'plugins/init.client'))
   addPlugin(resolver.resolve(runtimeDir, 'plugins/init.server'))
 
-  if (options.detectBrowser || options.detectOS || dependsOn.includes('http')) {
+  if (options.detectBrowser || options.detectOS) {
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.client'))
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.server'))
   }
@@ -129,9 +129,9 @@ export function configure(resolver: Resolver, options: HttpClientHints, nuxt: Nu
     addPlugin(resolver.resolve(runtimeDir, 'plugins/device.server'))
   }
 
-  if (dependsOn.includes('http')) {
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/http.client'))
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/http.server'))
+  if (dependsOn.includes('critical')) {
+    addPlugin(resolver.resolve(runtimeDir, 'plugins/critical.client'))
+    addPlugin(resolver.resolve(runtimeDir, 'plugins/critical.server'))
   }
 
   // @ts-expect-error missing at build time
@@ -152,7 +152,6 @@ function addClientHintsPlugin(
     write: false,
     getContents() {
       return `import { defineNuxtPlugin, readonly, useState } from '#imports'
-
 export default defineNuxtPlugin({
   name: '${name}',
   order: 'pre',

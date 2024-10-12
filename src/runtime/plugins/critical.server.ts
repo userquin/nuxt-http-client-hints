@@ -1,15 +1,28 @@
 import type { Browser } from 'detect-browser-es'
 import { parseUserAgent } from 'detect-browser-es'
 import { appendHeader } from 'h3'
-import type { ResolvedConfigurationOptions, SSRClientHints, SSRClientHintsConfiguration } from '../shared-types/types'
+import type {
+  ResolvedHttpClientHintsOptions,
+  CriticalClientHints,
+  CriticalClientHintsConfiguration,
+} from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
-import { defineNuxtPlugin, useCookie, useNuxtApp, useRuntimeConfig, useRequestEvent, useRequestHeaders } from '#imports'
+import {
+  defineNuxtPlugin,
+  useCookie,
+  useNuxtApp,
+  useRuntimeConfig,
+  useRequestEvent,
+  useRequestHeaders,
+} from '#imports'
 
 const AcceptClientHintsHeaders = {
   prefersColorScheme: 'Sec-CH-Prefers-Color-Scheme',
   prefersReducedMotion: 'Sec-CH-Prefers-Reduced-Motion',
+  prefersReducedTransparency: 'Sec-CH-Prefers-Reduced-Transparency',
   viewportHeight: 'Sec-CH-Viewport-Height',
   viewportWidth: 'Sec-CH-Viewport-Width',
+  width: 'Sec-CH-Width',
   devicePixelRatio: 'Sec-CH-DPR',
 }
 
@@ -24,14 +37,14 @@ const SecChUaMobile = 'Sec-CH-UA-Mobile'.toLowerCase() as Lowercase<string>
 const HttpRequestHeaders = Array.from(Object.values(AcceptClientHintsRequestHeaders)).concat('user-agent', 'cookie', SecChUaMobile)
 
 export default defineNuxtPlugin({
-  name: 'http-client-hints:http-server:plugin',
+  name: 'http-client-hints:critical-server:plugin',
   enforce: 'pre',
   parallel: true,
   // @ts-expect-error missing at build time
   dependsOn: ['http-client-hints:init-server:plugin'],
   async setup() {
     const state = useHttpClientHintsState()
-    const httpClientHints = useRuntimeConfig().public.httpClientHints as ResolvedConfigurationOptions
+    const httpClientHints = useRuntimeConfig().public.httpClientHints as ResolvedHttpClientHintsOptions
     const requestHeaders = useRequestHeaders<string>(HttpRequestHeaders)
     const userAgentHeader = requestHeaders['user-agent']
 
@@ -40,14 +53,14 @@ export default defineNuxtPlugin({
       ? parseUserAgent(userAgentHeader)
       : null
     // 2. prepare client hints request
-    const clientHintsRequest = collectClientHints(userAgent, httpClientHints.http!, requestHeaders)
+    const clientHintsRequest = collectClientHints(userAgent, httpClientHints.critical!, requestHeaders)
     // 3. write client hints response headers
-    writeClientHintsResponseHeaders(clientHintsRequest, httpClientHints.http!)
+    writeClientHintsResponseHeaders(clientHintsRequest, httpClientHints.critical!)
     state.value.clientHints = clientHintsRequest
     // 4. send the theme cookie to the client when required
     state.value.clientHints.colorSchemeCookie = writeThemeCookie(
       clientHintsRequest,
-      httpClientHints.http!,
+      httpClientHints.critical!,
     )
   },
 })
@@ -57,13 +70,17 @@ type BrowserFeatures = Record<AcceptClientHintsHeadersKey, BrowserFeatureAvailab
 
 // Tests for Browser compatibility
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Motion#browser_compatibility
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Transparency
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Color-Scheme#browser_compatibility
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/DPR#browser_compatibility
 const chromiumBasedBrowserFeatures: BrowserFeatures = {
   prefersColorScheme: (_, v) => v[0] >= 93,
   prefersReducedMotion: (_, v) => v[0] >= 108,
+  prefersReducedTransparency: (_, v) => v[0] >= 119,
   viewportHeight: (_, v) => v[0] >= 108,
   viewportWidth: (_, v) => v[0] >= 108,
+  // TODO: check if this is correct, no entry in mozilla docs, using DPR
+  width: (_, v) => v[0] >= 46,
   devicePixelRatio: (_, v) => v[0] >= 46,
 }
 const allowedBrowsers: [browser: Browser, features: BrowserFeatures][] = [
@@ -78,8 +95,11 @@ const allowedBrowsers: [browser: Browser, features: BrowserFeatures][] = [
   ['opera', {
     prefersColorScheme: (android, v) => v[0] >= (android ? 66 : 79),
     prefersReducedMotion: (android, v) => v[0] >= (android ? 73 : 94),
+    prefersReducedTransparency: (_, v) => v[0] >= 79,
     viewportHeight: (android, v) => v[0] >= (android ? 73 : 94),
     viewportWidth: (android, v) => v[0] >= (android ? 73 : 94),
+    // TODO: check if this is correct, no entry in mozilla docs, using DPR
+    width: (_, v) => v[0] >= 33,
     devicePixelRatio: (_, v) => v[0] >= 33,
   }],
 ]
@@ -113,32 +133,44 @@ function browserFeatureAvailable(userAgent: ReturnType<typeof parseUserAgent>, f
 
 function lookupClientHints(
   userAgent: ReturnType<typeof parseUserAgent>,
-  ssrClientHintsConfiguration: SSRClientHintsConfiguration,
+  criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
   headers: { [key in Lowercase<string>]?: string | undefined },
 ) {
-  const features: SSRClientHints = {
+  const features: CriticalClientHints = {
     firstRequest: true,
     prefersColorSchemeAvailable: false,
     prefersReducedMotionAvailable: false,
+    prefersReducedTransparencyAvailable: false,
     viewportHeightAvailable: false,
     viewportWidthAvailable: false,
+    widthAvailable: false,
     devicePixelRatioAvailable: false,
   }
 
   if (userAgent == null || userAgent.type !== 'browser')
     return features
 
-  if (ssrClientHintsConfiguration.prefersColorScheme)
+  if (criticalClientHintsConfiguration.prefersColorScheme)
     features.prefersColorSchemeAvailable = browserFeatureAvailable(userAgent, 'prefersColorScheme')
 
-  if (ssrClientHintsConfiguration.prefersReducedMotion)
+  if (criticalClientHintsConfiguration.prefersReducedMotion)
     features.prefersReducedMotionAvailable = browserFeatureAvailable(userAgent, 'prefersReducedMotion')
 
-  if (ssrClientHintsConfiguration.viewportSize) {
+  if (criticalClientHintsConfiguration.prefersReducedTransparency)
+    features.prefersReducedMotionAvailable = browserFeatureAvailable(userAgent, 'prefersReducedTransparency')
+
+  if (criticalClientHintsConfiguration.viewportSize) {
     features.viewportHeightAvailable = browserFeatureAvailable(userAgent, 'viewportHeight')
     features.viewportWidthAvailable = browserFeatureAvailable(userAgent, 'viewportWidth')
+  }
+
+  if (criticalClientHintsConfiguration.width) {
+    features.widthAvailable = browserFeatureAvailable(userAgent, 'width')
+  }
+
+  if (features.viewportWidthAvailable || features.viewportHeightAvailable) {
     // We don't need to include DPR on desktop browsers.
-    // Since sec-ch-ua-mobile is a low entropy header, we don't need to include it in Accept-CH
+    // Since sec-ch-ua-mobile is a low entropy header, we don't need to include it in Accept-CH,
     // the user agent will send it always unless blocked by a user agent permission policy, check:
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Mobile
     const mobileHeader = headers[SecChUaMobile]
@@ -151,19 +183,19 @@ function lookupClientHints(
 
 function collectClientHints(
   userAgent: ReturnType<typeof parseUserAgent>,
-  ssrClientHintsConfiguration: SSRClientHintsConfiguration,
+  criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
   headers: { [key in Lowercase<string>]?: string | undefined },
 ) {
   // collect client hints
-  const hints: SSRClientHints = lookupClientHints(userAgent, ssrClientHintsConfiguration, headers)
+  const hints: CriticalClientHints = lookupClientHints(userAgent, criticalClientHintsConfiguration, headers)
 
-  if (ssrClientHintsConfiguration.prefersColorScheme) {
-    if (ssrClientHintsConfiguration.prefersColorSchemeOptions) {
-      const cookieName = ssrClientHintsConfiguration.prefersColorSchemeOptions.cookieName
+  if (criticalClientHintsConfiguration.prefersColorScheme) {
+    if (criticalClientHintsConfiguration.prefersColorSchemeOptions) {
+      const cookieName = criticalClientHintsConfiguration.prefersColorSchemeOptions.cookieName
       const cookieValue = headers.cookie?.split(';').find(c => c.trim().startsWith(`${cookieName}=`))
       if (cookieValue) {
         const value = cookieValue.split('=')?.[1].trim()
-        if (ssrClientHintsConfiguration.prefersColorSchemeOptions.themeNames.includes(value)) {
+        if (criticalClientHintsConfiguration.prefersColorSchemeOptions.themeNames.includes(value)) {
           hints.colorSchemeFromCookie = value
           hints.firstRequest = false
         }
@@ -173,27 +205,26 @@ function collectClientHints(
       const value = hints.prefersColorSchemeAvailable
         ? headers[AcceptClientHintsRequestHeaders.prefersColorScheme]?.toLowerCase()
         : undefined
-      console.log({ value, headers })
       if (value === 'dark' || value === 'light' || value === 'no-preference') {
         hints.prefersColorScheme = value
         hints.firstRequest = false
       }
 
       // update the color scheme cookie
-      if (ssrClientHintsConfiguration.prefersColorSchemeOptions) {
+      if (criticalClientHintsConfiguration.prefersColorSchemeOptions) {
         if (!value || value === 'no-preference') {
-          hints.colorSchemeFromCookie = ssrClientHintsConfiguration.prefersColorSchemeOptions.defaultTheme
+          hints.colorSchemeFromCookie = criticalClientHintsConfiguration.prefersColorSchemeOptions.defaultTheme
         }
         else {
           hints.colorSchemeFromCookie = value === 'dark'
-            ? ssrClientHintsConfiguration.prefersColorSchemeOptions.darkThemeName
-            : ssrClientHintsConfiguration.prefersColorSchemeOptions.lightThemeName
+            ? criticalClientHintsConfiguration.prefersColorSchemeOptions.darkThemeName
+            : criticalClientHintsConfiguration.prefersColorSchemeOptions.lightThemeName
         }
       }
     }
   }
 
-  if (hints.prefersReducedMotionAvailable && ssrClientHintsConfiguration.prefersReducedMotion) {
+  if (hints.prefersReducedMotionAvailable && criticalClientHintsConfiguration.prefersReducedMotion) {
     const value = headers[AcceptClientHintsRequestHeaders.prefersReducedMotion]?.toLowerCase()
     if (value === 'no-preference' || value === 'reduce') {
       hints.prefersReducedMotion = value
@@ -201,7 +232,15 @@ function collectClientHints(
     }
   }
 
-  if (hints.viewportHeightAvailable && ssrClientHintsConfiguration.viewportSize) {
+  if (hints.prefersReducedTransparencyAvailable && criticalClientHintsConfiguration.prefersReducedTransparency) {
+    const value = headers[AcceptClientHintsRequestHeaders.prefersReducedTransparency]?.toLowerCase()
+    if (value) {
+      hints.prefersReducedTransparency = value === 'reduce' ? 'reduce' : 'no-preference'
+      hints.firstRequest = false
+    }
+  }
+
+  if (hints.viewportHeightAvailable && criticalClientHintsConfiguration.viewportSize) {
     const header = headers[AcceptClientHintsRequestHeaders.viewportHeight]
     if (header) {
       hints.firstRequest = false
@@ -209,15 +248,15 @@ function collectClientHints(
         hints.viewportHeight = Number.parseInt(header)
       }
       catch {
-        hints.viewportHeight = ssrClientHintsConfiguration.clientHeight
+        hints.viewportHeight = criticalClientHintsConfiguration.clientHeight
       }
     }
   }
   else {
-    hints.viewportHeight = ssrClientHintsConfiguration.clientHeight
+    hints.viewportHeight = criticalClientHintsConfiguration.clientHeight
   }
 
-  if (hints.viewportWidthAvailable && ssrClientHintsConfiguration.viewportSize) {
+  if (hints.viewportWidthAvailable && criticalClientHintsConfiguration.viewportSize) {
     const header = headers[AcceptClientHintsRequestHeaders.viewportWidth]
     if (header) {
       hints.firstRequest = false
@@ -225,15 +264,15 @@ function collectClientHints(
         hints.viewportWidth = Number.parseInt(header)
       }
       catch {
-        hints.viewportWidth = ssrClientHintsConfiguration.clientWidth
+        hints.viewportWidth = criticalClientHintsConfiguration.clientWidth
       }
     }
   }
   else {
-    hints.viewportWidth = ssrClientHintsConfiguration.clientWidth
+    hints.viewportWidth = criticalClientHintsConfiguration.clientWidth
   }
 
-  if (hints.devicePixelRatioAvailable && ssrClientHintsConfiguration.viewportSize) {
+  if (hints.devicePixelRatioAvailable && criticalClientHintsConfiguration.viewportSize) {
     const header = headers[AcceptClientHintsRequestHeaders.devicePixelRatio]
     if (header) {
       hints.firstRequest = false
@@ -252,6 +291,19 @@ function collectClientHints(
     }
   }
 
+  if (hints.widthAvailable && criticalClientHintsConfiguration.width) {
+    const header = headers[AcceptClientHintsRequestHeaders.width]
+    if (header) {
+      hints.firstRequest = false
+      try {
+        hints.width = Number.parseInt(header)
+      }
+      catch {
+        // just ignore
+      }
+    }
+  }
+
   return hints
 }
 
@@ -262,25 +314,31 @@ function writeClientHintHeaders(key: string, headers: Record<string, string[]>) 
 }
 
 function writeClientHintsResponseHeaders(
-  clientHintsRequest: SSRClientHints,
-  ssrClientHintsConfiguration: SSRClientHintsConfiguration,
+  criticalClientHints: CriticalClientHints,
+  criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
 ) {
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Critical-CH
   // Each header listed in the Critical-CH header should also be present in the Accept-CH and Vary headers.
   const headers: Record<string, string[]> = {}
 
-  if (ssrClientHintsConfiguration.prefersColorScheme && clientHintsRequest.prefersColorSchemeAvailable)
+  if (criticalClientHintsConfiguration.prefersColorScheme && criticalClientHints.prefersColorSchemeAvailable)
     writeClientHintHeaders(AcceptClientHintsHeaders.prefersColorScheme, headers)
 
-  if (ssrClientHintsConfiguration.prefersReducedMotion && clientHintsRequest.prefersReducedMotionAvailable)
+  if (criticalClientHintsConfiguration.prefersReducedMotion && criticalClientHints.prefersReducedMotionAvailable)
     writeClientHintHeaders(AcceptClientHintsHeaders.prefersReducedMotion, headers)
 
-  if (ssrClientHintsConfiguration.viewportSize && clientHintsRequest.viewportHeightAvailable && clientHintsRequest.viewportWidthAvailable) {
+  if (criticalClientHintsConfiguration.prefersReducedTransparency && criticalClientHints.prefersReducedTransparencyAvailable)
+    writeClientHintHeaders(AcceptClientHintsHeaders.prefersReducedTransparency, headers)
+
+  if (criticalClientHintsConfiguration.viewportSize && criticalClientHints.viewportHeightAvailable && criticalClientHints.viewportWidthAvailable) {
     writeClientHintHeaders(AcceptClientHintsHeaders.viewportHeight, headers)
     writeClientHintHeaders(AcceptClientHintsHeaders.viewportWidth, headers)
-    if (clientHintsRequest.devicePixelRatioAvailable)
+    if (criticalClientHints.devicePixelRatioAvailable)
       writeClientHintHeaders(AcceptClientHintsHeaders.devicePixelRatio, headers)
   }
+
+  if (criticalClientHintsConfiguration.width && criticalClientHints.widthAvailable)
+    writeClientHintHeaders(AcceptClientHintsHeaders.width, headers)
 
   if (Object.keys(headers).length === 0)
     return
@@ -288,8 +346,10 @@ function writeClientHintsResponseHeaders(
   const nuxtApp = useNuxtApp()
   const callback = () => {
     const event = useRequestEvent(nuxtApp)
-    for (const [key, value] of Object.entries(headers)) {
-      appendHeader(event, key, value)
+    if (event) {
+      for (const [key, value] of Object.entries(headers)) {
+        appendHeader(event, key, value)
+      }
     }
   }
   const unhook = nuxtApp.hooks.hookOnce('app:rendered', callback)
@@ -300,19 +360,19 @@ function writeClientHintsResponseHeaders(
 }
 
 function writeThemeCookie(
-  clientHintsRequest: SSRClientHints,
-  ssrClientHintsConfiguration: SSRClientHintsConfiguration,
+  criticalClientHints: CriticalClientHints,
+  criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
 ) {
-  if (!ssrClientHintsConfiguration.prefersColorScheme || !ssrClientHintsConfiguration.prefersColorSchemeOptions)
+  if (!criticalClientHintsConfiguration.prefersColorScheme || !criticalClientHintsConfiguration.prefersColorSchemeOptions)
     return
 
-  const cookieName = ssrClientHintsConfiguration.prefersColorSchemeOptions.cookieName
-  const themeName = clientHintsRequest.colorSchemeFromCookie ?? ssrClientHintsConfiguration.prefersColorSchemeOptions.defaultTheme
-  const path = ssrClientHintsConfiguration.prefersColorSchemeOptions.baseUrl
+  const cookieName = criticalClientHintsConfiguration.prefersColorSchemeOptions.cookieName
+  const themeName = criticalClientHints.colorSchemeFromCookie ?? criticalClientHintsConfiguration.prefersColorSchemeOptions.defaultTheme
+  const path = criticalClientHintsConfiguration.prefersColorSchemeOptions.baseUrl
 
   const date = new Date()
   const expires = new Date(date.setDate(date.getDate() + 365))
-  if (!clientHintsRequest.firstRequest || !ssrClientHintsConfiguration.reloadOnFirstRequest) {
+  if (!criticalClientHints.firstRequest || !criticalClientHintsConfiguration.reloadOnFirstRequest) {
     useCookie(cookieName, {
       path,
       expires,

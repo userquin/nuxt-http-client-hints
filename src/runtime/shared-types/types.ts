@@ -12,43 +12,45 @@ export type NetworkHints = 'Save-Data' | 'Downlink' | 'ECT' | 'RTT'
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints
  */
 export type DeviceHints = 'Device-Memory'
-/**
- * @see https://wicg.github.io/responsive-image-client-hints
- */
-export type ClientHints = 'Sec-CH-Width' | 'Sec-CH-Prefers-Color-Scheme' | 'Sec-CH-Prefers-Reduced-Motion' | 'Sec-CH-Viewport-Height' | 'Sec-CH-Viewport-Width' | 'Sec-CH-DPR'
 
-export interface ClientHintRequestFeatures {
+export interface CriticalClientHintRequestFeatures {
   firstRequest: boolean
   prefersColorSchemeAvailable: boolean
   prefersReducedMotionAvailable: boolean
+  prefersReducedTransparencyAvailable: boolean
   viewportHeightAvailable: boolean
   viewportWidthAvailable: boolean
+  widthAvailable: boolean
   devicePixelRatioAvailable: boolean
 }
-export interface SSRClientHints extends ClientHintRequestFeatures {
+export interface CriticalClientHints extends CriticalClientHintRequestFeatures {
   prefersColorScheme?: 'dark' | 'light' | 'no-preference'
   prefersReducedMotion?: 'no-preference' | 'reduce'
+  prefersReducedTransparency?: 'no-preference' | 'reduce'
   viewportHeight?: number
   viewportWidth?: number
+  width?: number
   devicePixelRatio?: number
   colorSchemeFromCookie?: string
   colorSchemeCookie?: string
 }
 
-export interface HttpClientHintsState {
-  browserInfo?: {
-    type: DetectedInfoType
-    bot?: boolean
-    name: Browser
-    version?: string | null
-    os: OperatingSystem | null
-    ua?: UserAgentDataInfo | null
-  }
-  userAgentData?: UserAgentDataInfo
-  clientHints?: SSRClientHints
+export interface BrowserInfo {
+  type: DetectedInfoType
+  bot?: boolean
+  name: Browser
+  version?: string | null
+  os: OperatingSystem | null
+  ua?: UserAgentDataInfo | null
 }
 
-export interface SSRClientHintsConfiguration {
+export interface HttpClientHintsState {
+  browserInfo?: BrowserInfo
+  userAgentData?: UserAgentDataInfo
+  clientHints?: CriticalClientHints
+}
+
+export interface CriticalClientHintsConfiguration {
   /**
    * Should the module reload the page on first request?
    *
@@ -56,31 +58,43 @@ export interface SSRClientHintsConfiguration {
    */
   reloadOnFirstRequest?: boolean
   /**
+   * Enable `Sec-CH-Width` for images?
+   * @see https://wicg.github.io/responsive-image-client-hints/#sec-ch-width
+   * @default false
+   */
+  width?: boolean
+  /**
    * Enable `Sec-CH-Viewport-Width` and `Sec-CH-Viewport-Height` headers?
-   *
    * @see https://wicg.github.io/responsive-image-client-hints/#sec-ch-viewport-width
    * @see https://wicg.github.io/responsive-image-client-hints/#sec-ch-viewport-height
-   *
    * @default false
    */
   viewportSize?: boolean
   /**
    * Enable `Sec-CH-Prefers-Color-Scheme` header?
-   *
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Color-Scheme
-   *
    * @default false
    */
   prefersColorScheme?: boolean
   /**
    * Enable `Sec-CH-Prefers-Reduced-Motion` header?
-   *
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Motion
-   *
    * @default false
    */
-  prefersReducedMotion: boolean
+  prefersReducedMotion?: boolean
+  /**
+   * Enable `Sec-CH-Prefers-Reduced-Transparency` header?
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Reduced-Transparency
+   * @default false
+   */
+  prefersReducedTransparency?: boolean
+  /**
+   * Default client width when missing headers.
+   */
   clientWidth?: number
+  /**
+   * Default client height when missing headers.
+   */
   clientHeight?: number
   /**
    * The options for `prefersColorScheme`, `prefersColorScheme` must be enabled.
@@ -88,8 +102,18 @@ export interface SSRClientHintsConfiguration {
    * If you want the module to handle the color scheme for you, you should configure this option, otherwise you'll need to add your custom implementation.
    */
   prefersColorSchemeOptions?: {
+    /**
+     * The default base URL for the theme cookie.
+     * @default '/'
+     */
     baseUrl: string
+    /**
+     * The default theme name.
+     */
     defaultTheme: string
+    /**
+     * The available theme names.
+     */
     themeNames: string[]
     /**
      * The name for the cookie.
@@ -121,16 +145,15 @@ export interface SSRClientHintsConfiguration {
   }
 }
 
-export interface ResolvedConfigurationOptions {
+export interface ResolvedHttpClientHintsOptions {
   detectBrowser: boolean
   detectOS: boolean | 'windows-11'
   userAgent: UserAgentHints[]
   network: NetworkHints[]
   device: DeviceHints[]
   /**
-   * Http Client Hints.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints
+   * Critical Client Hints.
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints#critical_client_hints
    */
-  http?: SSRClientHintsConfiguration
+  critical?: CriticalClientHintsConfiguration
 }

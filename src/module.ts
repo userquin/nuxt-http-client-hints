@@ -1,6 +1,7 @@
 import { createResolver, defineNuxtModule } from '@nuxt/kit'
 import type { HookResult } from '@nuxt/schema'
-import type { HttpClientHints as ModuleOptions } from './types'
+import { version } from '../package.json'
+import type { HttpClientHintsOptions as ModuleOptions } from './types'
 import { configure } from './utils/configuration'
 import type { HttpClientHintsState } from './runtime/shared-types/types'
 
@@ -15,6 +16,10 @@ export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'http-client-hints',
     configKey: 'httpClientHints',
+    compatibility: {
+      nuxt: '>=3.9.0',
+    },
+    version,
   },
   defaults: () => ({
     detectBrowser: false,
