@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   httpClientHints: {
     detectBrowser: true,
     detectOS: 'windows-11',
+    device: 'memory',
     critical: {
       width: true,
       prefersColorScheme: true,

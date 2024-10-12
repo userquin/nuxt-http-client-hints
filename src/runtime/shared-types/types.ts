@@ -11,9 +11,9 @@ export type NetworkHints = 'Save-Data' | 'Downlink' | 'ECT' | 'RTT'
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#client_hints
  */
-export type DeviceHints = 'Device-Memory'
+export type DeviceHints = 'memory'
 
-export interface CriticalClientHintRequestFeatures {
+export interface CriticalClientHintsRequestFeatures {
   firstRequest: boolean
   prefersColorSchemeAvailable: boolean
   prefersReducedMotionAvailable: boolean
@@ -23,7 +23,7 @@ export interface CriticalClientHintRequestFeatures {
   widthAvailable: boolean
   devicePixelRatioAvailable: boolean
 }
-export interface CriticalClientHints extends CriticalClientHintRequestFeatures {
+export interface CriticalClientHints extends CriticalClientHintsRequestFeatures {
   prefersColorScheme?: 'dark' | 'light' | 'no-preference'
   prefersReducedMotion?: 'no-preference' | 'reduce'
   prefersReducedTransparency?: 'no-preference' | 'reduce'
@@ -35,6 +35,13 @@ export interface CriticalClientHints extends CriticalClientHintRequestFeatures {
   colorSchemeCookie?: string
 }
 
+export interface DeviceClientHintsRequestFeatures {
+  memoryAvailable: boolean
+}
+export interface DeviceClientHints extends DeviceClientHintsRequestFeatures {
+  memory?: number
+}
+
 export interface BrowserInfo {
   type: DetectedInfoType
   bot?: boolean
@@ -44,8 +51,13 @@ export interface BrowserInfo {
   ua?: UserAgentDataInfo | null
 }
 
+export interface DeviceInfo {
+  memory?: number
+}
+
 export interface HttpClientHintsState {
   browserInfo?: BrowserInfo
+  deviceInfo?: DeviceInfo
   userAgentData?: UserAgentDataInfo
   clientHints?: CriticalClientHints
 }

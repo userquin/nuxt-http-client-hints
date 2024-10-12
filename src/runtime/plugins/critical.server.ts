@@ -1,18 +1,16 @@
 import type { Browser } from 'detect-browser-es'
 import { parseUserAgent } from 'detect-browser-es'
-import { appendHeader } from 'h3'
 import type {
   ResolvedHttpClientHintsOptions,
   CriticalClientHints,
   CriticalClientHintsConfiguration,
 } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
+import { writeClientHintHeaders, writeHeaders } from './headers'
 import {
   defineNuxtPlugin,
   useCookie,
-  useNuxtApp,
   useRuntimeConfig,
-  useRequestEvent,
   useRequestHeaders,
 } from '#imports'
 
@@ -307,12 +305,6 @@ function collectClientHints(
   return hints
 }
 
-function writeClientHintHeaders(key: string, headers: Record<string, string[]>) {
-  ClientHeaders.forEach((header) => {
-    headers[header] = (headers[header] ? headers[header] : []).concat(key)
-  })
-}
-
 function writeClientHintsResponseHeaders(
   criticalClientHints: CriticalClientHints,
   criticalClientHintsConfiguration: CriticalClientHintsConfiguration,
@@ -322,41 +314,25 @@ function writeClientHintsResponseHeaders(
   const headers: Record<string, string[]> = {}
 
   if (criticalClientHintsConfiguration.prefersColorScheme && criticalClientHints.prefersColorSchemeAvailable)
-    writeClientHintHeaders(AcceptClientHintsHeaders.prefersColorScheme, headers)
+    writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.prefersColorScheme, headers)
 
   if (criticalClientHintsConfiguration.prefersReducedMotion && criticalClientHints.prefersReducedMotionAvailable)
-    writeClientHintHeaders(AcceptClientHintsHeaders.prefersReducedMotion, headers)
+    writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.prefersReducedMotion, headers)
 
   if (criticalClientHintsConfiguration.prefersReducedTransparency && criticalClientHints.prefersReducedTransparencyAvailable)
-    writeClientHintHeaders(AcceptClientHintsHeaders.prefersReducedTransparency, headers)
+    writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.prefersReducedTransparency, headers)
 
   if (criticalClientHintsConfiguration.viewportSize && criticalClientHints.viewportHeightAvailable && criticalClientHints.viewportWidthAvailable) {
-    writeClientHintHeaders(AcceptClientHintsHeaders.viewportHeight, headers)
-    writeClientHintHeaders(AcceptClientHintsHeaders.viewportWidth, headers)
+    writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.viewportHeight, headers)
+    writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.viewportWidth, headers)
     if (criticalClientHints.devicePixelRatioAvailable)
-      writeClientHintHeaders(AcceptClientHintsHeaders.devicePixelRatio, headers)
+      writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.devicePixelRatio, headers)
   }
 
   if (criticalClientHintsConfiguration.width && criticalClientHints.widthAvailable)
-    writeClientHintHeaders(AcceptClientHintsHeaders.width, headers)
+    writeClientHintHeaders(ClientHeaders, AcceptClientHintsHeaders.width, headers)
 
-  if (Object.keys(headers).length === 0)
-    return
-
-  const nuxtApp = useNuxtApp()
-  const callback = () => {
-    const event = useRequestEvent(nuxtApp)
-    if (event) {
-      for (const [key, value] of Object.entries(headers)) {
-        appendHeader(event, key, value)
-      }
-    }
-  }
-  const unhook = nuxtApp.hooks.hookOnce('app:rendered', callback)
-  nuxtApp.hooks.hookOnce('app:error', () => {
-    unhook()
-    return callback()
-  })
+  writeHeaders(headers)
 }
 
 function writeThemeCookie(

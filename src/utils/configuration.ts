@@ -75,7 +75,7 @@ export function configure(resolver: Resolver, options: HttpClientHintsOptions, n
   }
   if (device) {
     if (device === true) {
-      resolvedOptions.device.push('Device-Memory')
+      resolvedOptions.device.push('memory')
     }
     else if (Array.isArray(device)) {
       resolvedOptions.device.push(...device)
