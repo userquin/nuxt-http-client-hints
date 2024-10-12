@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     device: 'memory',
     critical: {
       width: true,
+      viewportSize: true,
       prefersColorScheme: true,
     },
   },

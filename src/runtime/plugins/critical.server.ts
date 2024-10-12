@@ -6,7 +6,7 @@ import type {
   CriticalClientHintsConfiguration,
 } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
-import { writeClientHintHeaders, writeHeaders } from './headers'
+import { lookupHeader, writeClientHintHeaders, writeHeaders } from './headers'
 import {
   defineNuxtPlugin,
   useCookie,
@@ -171,8 +171,12 @@ function lookupClientHints(
     // Since sec-ch-ua-mobile is a low entropy header, we don't need to include it in Accept-CH,
     // the user agent will send it always unless blocked by a user agent permission policy, check:
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Mobile
-    const mobileHeader = headers[SecChUaMobile]
-    if (mobileHeader === '?1')
+    const mobileHeader = lookupHeader(
+      'boolean',
+      SecChUaMobile,
+      headers,
+    )
+    if (mobileHeader)
       features.devicePixelRatioAvailable = browserFeatureAvailable(userAgent, 'devicePixelRatio')
   }
 
@@ -239,15 +243,17 @@ function collectClientHints(
   }
 
   if (hints.viewportHeightAvailable && criticalClientHintsConfiguration.viewportSize) {
-    const header = headers[AcceptClientHintsRequestHeaders.viewportHeight]
-    if (header) {
+    const viewportHeight = lookupHeader(
+      'int',
+      AcceptClientHintsRequestHeaders.viewportHeight,
+      headers,
+    )
+    if (typeof viewportHeight === 'number') {
       hints.firstRequest = false
-      try {
-        hints.viewportHeight = Number.parseInt(header)
-      }
-      catch {
-        hints.viewportHeight = criticalClientHintsConfiguration.clientHeight
-      }
+      hints.viewportHeight = viewportHeight
+    }
+    else {
+      hints.viewportHeight = criticalClientHintsConfiguration.clientHeight
     }
   }
   else {
@@ -255,15 +261,17 @@ function collectClientHints(
   }
 
   if (hints.viewportWidthAvailable && criticalClientHintsConfiguration.viewportSize) {
-    const header = headers[AcceptClientHintsRequestHeaders.viewportWidth]
-    if (header) {
+    const viewportWidth = lookupHeader(
+      'int',
+      AcceptClientHintsRequestHeaders.viewportWidth,
+      headers,
+    )
+    if (typeof viewportWidth === 'number') {
       hints.firstRequest = false
-      try {
-        hints.viewportWidth = Number.parseInt(header)
-      }
-      catch {
-        hints.viewportWidth = criticalClientHintsConfiguration.clientWidth
-      }
+      hints.viewportWidth = viewportWidth
+    }
+    else {
+      hints.viewportWidth = criticalClientHintsConfiguration.clientWidth
     }
   }
   else {
@@ -271,16 +279,20 @@ function collectClientHints(
   }
 
   if (hints.devicePixelRatioAvailable && criticalClientHintsConfiguration.viewportSize) {
-    const header = headers[AcceptClientHintsRequestHeaders.devicePixelRatio]
-    if (header) {
+    const devicePixelRatio = lookupHeader(
+      'float',
+      AcceptClientHintsRequestHeaders.devicePixelRatio,
+      headers,
+    )
+    if (typeof devicePixelRatio === 'number') {
       hints.firstRequest = false
       try {
-        hints.devicePixelRatio = Number.parseFloat(header)
-        if (!Number.isNaN(hints.devicePixelRatio) && hints.devicePixelRatio > 0) {
+        hints.devicePixelRatio = devicePixelRatio
+        if (!Number.isNaN(devicePixelRatio) && devicePixelRatio > 0) {
           if (typeof hints.viewportWidth === 'number')
-            hints.viewportWidth = Math.round(hints.viewportWidth / hints.devicePixelRatio)
+            hints.viewportWidth = Math.round(hints.viewportWidth / devicePixelRatio)
           if (typeof hints.viewportHeight === 'number')
-            hints.viewportHeight = Math.round(hints.viewportHeight / hints.devicePixelRatio)
+            hints.viewportHeight = Math.round(hints.viewportHeight / devicePixelRatio)
         }
       }
       catch {
@@ -290,15 +302,14 @@ function collectClientHints(
   }
 
   if (hints.widthAvailable && criticalClientHintsConfiguration.width) {
-    const header = headers[AcceptClientHintsRequestHeaders.width]
-    if (header) {
+    const width = lookupHeader(
+      'int',
+      AcceptClientHintsRequestHeaders.width,
+      headers,
+    )
+    if (typeof width === 'number') {
       hints.firstRequest = false
-      try {
-        hints.width = Number.parseInt(header)
-      }
-      catch {
-        // just ignore
-      }
+      hints.width = width
     }
   }
 

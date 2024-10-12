@@ -6,11 +6,15 @@ import type {
   ResolvedHttpClientHintsOptions,
 } from '../shared-types/types'
 import { useHttpClientHintsState } from './state'
-import { writeClientHintHeaders, writeHeaders } from './headers'
+import { type GetHeaderType, lookupHeader, writeClientHintHeaders, writeHeaders } from './headers'
 import { defineNuxtPlugin, useRequestHeaders, useRuntimeConfig } from '#imports'
 
 const DeviceClientHintsHeaders: Record<DeviceHints, string> = {
   memory: 'Device-Memory',
+}
+
+const DeviceClientHintsHeadersTypes: Record<DeviceHints, GetHeaderType> = {
+  memory: 'float',
 }
 
 type DeviceClientHintsHeadersKey = keyof typeof DeviceClientHintsHeaders
@@ -119,18 +123,15 @@ function collectClientHints(
   const hints = lookupClientHints(userAgent, deviceHints)
 
   for (const hint of deviceHints) {
-    // TODO: review this logic, we need some helpers to parse headers
-    if (hint === 'memory') {
-      if (hints.memoryAvailable) {
-        const header = headers[AcceptClientHintsRequestHeaders.memory]
-        if (header) {
-          try {
-            hints.memory = Number.parseFloat(header)
-          }
-          catch {
-            // just ignore
-          }
-        }
+    if (hints[`${hint}Available`]) {
+      const value = lookupHeader(
+        DeviceClientHintsHeadersTypes[hint],
+        AcceptClientHintsRequestHeaders[hint],
+        headers,
+      )
+      console.log({ hint, value })
+      if (typeof value !== 'undefined') {
+        hints[hint] = value as typeof hints[typeof hint]
       }
     }
   }
