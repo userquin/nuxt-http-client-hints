@@ -8,6 +8,8 @@
 
 Access and use HTTP Client Hints in your Nuxt application. Detect the client browser and the operating system on your server.
 
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/userquin/nuxt-http-client-hints)
+
 ## Features
 
 - 🚀 Browser and Operating System detection: check [detect-browser-es](https://www.npmjs.com/package/detect-browser-es) for more information.
@@ -113,24 +115,23 @@ You can check the source code or the [JSDocs](https://www.jsdocs.io/package/nuxt
   pnpm install
   
   # Generate type stubs
-  pnpm run dev:prepare
+  pnpm dev:prepare
   
   # Develop with the playground
-  pnpm run dev
+  pnpm dev
   
   # Build the playground
-  pnpm run dev:build
+  pnpm dev:build
   
   # Run ESLint
-  pnpm run lint
+  pnpm lint
   
   # Run Vitest
-  pnpm run test
-  pnpm run test:watch
+  pnpm test
+  pnpm test:watch
   ```
 
 </details>
-
 
 ## License
 
