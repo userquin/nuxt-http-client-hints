@@ -16,8 +16,9 @@ import {
   useRequestHeaders,
   useRuntimeConfig,
 } from '#imports'
+import type { Plugin } from '#app'
 
-export default defineNuxtPlugin({
+const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:detect-server:plugin',
   enforce: 'pre',
   parallel: true,
@@ -87,3 +88,5 @@ export default defineNuxtPlugin({
     }
   },
 })
+
+export default plugin

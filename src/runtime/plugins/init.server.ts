@@ -1,8 +1,9 @@
 import { parseUserAgent } from 'detect-browser-es'
 import { useHttpClientHintsState } from './state'
 import { defineNuxtPlugin, useRequestHeaders } from '#imports'
+import type { Plugin } from '#app'
 
-export default defineNuxtPlugin({
+const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:init-server:plugin',
   enforce: 'pre',
   parallel: false,
@@ -16,3 +17,5 @@ export default defineNuxtPlugin({
       : null
   },
 })
+
+export default plugin

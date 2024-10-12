@@ -13,6 +13,7 @@ import {
   useRuntimeConfig,
   useRequestHeaders,
 } from '#imports'
+import type { Plugin } from '#app'
 
 const AcceptClientHintsHeaders = {
   prefersColorScheme: 'Sec-CH-Prefers-Color-Scheme',
@@ -34,7 +35,7 @@ const AcceptClientHintsRequestHeaders = Object.entries(AcceptClientHintsHeaders)
 const SecChUaMobile = 'Sec-CH-UA-Mobile'.toLowerCase() as Lowercase<string>
 const HttpRequestHeaders = Array.from(Object.values(AcceptClientHintsRequestHeaders)).concat('user-agent', 'cookie', SecChUaMobile)
 
-export default defineNuxtPlugin({
+const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:critical-server:plugin',
   enforce: 'pre',
   parallel: true,
@@ -59,6 +60,8 @@ export default defineNuxtPlugin({
     )
   },
 })
+
+export default plugin
 
 type BrowserFeatureAvailable = (android: boolean, versions: number[]) => boolean
 type BrowserFeatures = Record<AcceptClientHintsHeadersKey, BrowserFeatureAvailable>

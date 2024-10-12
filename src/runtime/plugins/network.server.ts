@@ -5,6 +5,7 @@ import type { GetHeaderType } from './headers'
 import { lookupHeader, writeClientHintHeaders, writeHeaders } from './headers'
 import { browserFeatureAvailable } from './features'
 import { defineNuxtPlugin, useRequestHeaders, useRuntimeConfig } from '#imports'
+import type { Plugin } from '#app'
 
 const NetworkClientHintsHeaders: Record<NetworkHints, string> = {
   savedata: 'Save-Data',
@@ -29,7 +30,7 @@ const AcceptClientHintsRequestHeaders = Object.entries(NetworkClientHintsHeaders
 
 const HttpRequestHeaders = Array.from(Object.values(NetworkClientHintsHeaders)).concat('user-agent')
 
-export default defineNuxtPlugin({
+const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:network-server:plugin',
   enforce: 'pre',
   parallel: true,
@@ -49,6 +50,8 @@ export default defineNuxtPlugin({
     state.value.network = clientHintsRequest
   },
 })
+
+export default plugin
 
 type BrowserFeatureAvailable = (android: boolean, versions: number[]) => boolean
 type BrowserFeatures = Record<NetworkClientHintsHeadersKey, BrowserFeatureAvailable>

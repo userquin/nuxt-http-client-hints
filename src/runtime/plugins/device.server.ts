@@ -8,6 +8,7 @@ import { useHttpClientHintsState } from './state'
 import { type GetHeaderType, lookupHeader, writeClientHintHeaders, writeHeaders } from './headers'
 import { browserFeatureAvailable } from './features'
 import { defineNuxtPlugin, useRequestHeaders, useRuntimeConfig } from '#imports'
+import type { Plugin } from '#app'
 
 const DeviceClientHintsHeaders: Record<DeviceHints, string> = {
   memory: 'Device-Memory',
@@ -26,7 +27,7 @@ const AcceptClientHintsRequestHeaders = Object.entries(DeviceClientHintsHeaders)
 
 const HttpRequestHeaders = Array.from(Object.values(DeviceClientHintsHeaders)).concat('user-agent')
 
-export default defineNuxtPlugin({
+const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:device-server:plugin',
   enforce: 'pre',
   parallel: true,
@@ -46,6 +47,8 @@ export default defineNuxtPlugin({
     state.value.device = clientHintsRequest
   },
 })
+
+export default plugin
 
 type BrowserFeatureAvailable = (android: boolean, versions: number[]) => boolean
 type BrowserFeatures = Record<DeviceClientHintsHeadersKey, BrowserFeatureAvailable>
