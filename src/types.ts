@@ -5,6 +5,8 @@ import type {
   UserAgentHints,
 } from './runtime/shared-types/types'
 
+export type { DeviceHints, NetworkHints, CriticalClientHintsConfiguration, UserAgentHints }
+
 export interface HttpClientHintsOptions {
   /**
    * Enable browser.

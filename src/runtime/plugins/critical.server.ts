@@ -1,5 +1,4 @@
-import type { Browser } from 'detect-browser-es'
-import { parseUserAgent } from 'detect-browser-es'
+import type { Browser, parseUserAgent } from 'detect-browser-es'
 import type {
   ResolvedHttpClientHintsOptions,
   CriticalInfo,
@@ -40,16 +39,13 @@ export default defineNuxtPlugin({
   parallel: true,
   // @ts-expect-error missing at build time
   dependsOn: ['http-client-hints:init-server:plugin'],
-  async setup() {
+  async setup(nuxtApp) {
     const state = useHttpClientHintsState()
     const httpClientHints = useRuntimeConfig().public.httpClientHints as ResolvedHttpClientHintsOptions
     const requestHeaders = useRequestHeaders<string>(HttpRequestHeaders)
-    const userAgentHeader = requestHeaders['user-agent']
 
     // 1. extract browser info
-    const userAgent = userAgentHeader
-      ? parseUserAgent(userAgentHeader)
-      : null
+    const userAgent = nuxtApp.ssrContext?._httpClientHintsUserAgent as ReturnType<typeof parseUserAgent>
     // 2. prepare client hints request
     const clientHintsRequest = collectClientHints(userAgent, httpClientHints.critical!, requestHeaders)
     // 3. write client hints response headers

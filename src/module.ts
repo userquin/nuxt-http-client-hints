@@ -1,4 +1,4 @@
-import { createResolver, defineNuxtModule } from '@nuxt/kit'
+import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { HookResult } from '@nuxt/schema'
 import { version } from '../package.json'
 import type { HttpClientHintsOptions as ModuleOptions } from './types'
@@ -12,9 +12,11 @@ export interface ModuleRuntimeHooks {
   'http-client-hints:ssr-client-hints': (clientHints: HttpClientHintsState) => HookResult
 }
 
+const NAME = 'http-client-hints'
+
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'http-client-hints',
+    name: NAME,
     configKey: 'httpClientHints',
     compatibility: {
       nuxt: '>=3.9.0',
@@ -25,6 +27,22 @@ export default defineNuxtModule<ModuleOptions>({
     detectBrowser: false,
   }),
   setup(options, nuxt) {
-    configure(createResolver(import.meta.url), options, nuxt)
+    configure(
+      {
+        resolver: createResolver(import.meta.url),
+        logger: useLogger(`nuxt:${NAME}`),
+        options,
+        resolvedOptions: {
+          detectBrowser: false,
+          detectOS: false,
+          userAgent: [],
+          network: [],
+          device: [],
+        },
+        clientDependsOn: [],
+        serverDependsOn: [],
+      },
+      nuxt,
+    )
   },
 })

@@ -6,31 +6,26 @@ import type { ResolvedHttpClientHintsOptions } from '../runtime/shared-types/typ
 
 type PluginType = 'detect' | 'user-agent' | 'network' | 'device' | 'critical'
 
-export function configure(resolver: Resolver, options: HttpClientHintsOptions, nuxt: Nuxt) {
+export interface HttpClientHintsContext {
+  resolver: Resolver
+  logger: ReturnType<typeof import('@nuxt/kit')['useLogger']>
+  options: HttpClientHintsOptions
+  resolvedOptions: ResolvedHttpClientHintsOptions
+  clientDependsOn: PluginType[]
+  serverDependsOn: PluginType[]
+}
+
+export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
+  const {
+    options,
+    resolvedOptions,
+    resolver,
+    logger,
+    clientDependsOn,
+    serverDependsOn,
+  } = ctx
+
   const runtimeDir = resolver.resolve('./runtime')
-
-  nuxt.options.build.transpile.push(runtimeDir)
-
-  if ((options.detectBrowser || options.detectOS) && !nuxt.options.ssr) {
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolver.resolve(runtimeDir, 'plugins/types') })
-    })
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.client'))
-  }
-
-  if (!nuxt.options.ssr) {
-    return
-  }
-
-  const resolvedOptions: ResolvedHttpClientHintsOptions = {
-    detectBrowser: false,
-    detectOS: false,
-    userAgent: [],
-    network: [],
-    device: [],
-  }
-
-  const dependsOn: PluginType[] = []
 
   const {
     userAgent,
@@ -54,14 +49,31 @@ export function configure(resolver: Resolver, options: HttpClientHintsOptions, n
     else {
       resolvedOptions.userAgent.push(userAgent)
     }
-    if (resolvedOptions.userAgent.length) {
-      dependsOn.push('user-agent')
-    }
   }
+
+  const clientOnly = nuxt.options._generate || !nuxt.options.ssr
+
+  // we register the client detector only if needed and not in SSR mode
+  if ((options.detectBrowser || options.detectOS || resolvedOptions.userAgent.length) && clientOnly) {
+    nuxt.options.build.transpile.push(runtimeDir)
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: resolver.resolve(runtimeDir, 'plugins/types') })
+    })
+    addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.client'))
+    return
+  }
+
+  // servers plugin work only with SSR
+  if (clientOnly) {
+    logger.warn('http-client-hints module is only supported in SSR mode')
+    return
+  }
+
+  nuxt.options.build.transpile.push(runtimeDir)
 
   if (network) {
     if (network === true) {
-      resolvedOptions.network.push('Save-Data', 'Downlink', 'ECT', 'RTT')
+      resolvedOptions.network.push('savedata', 'downlink', 'ect', 'rtt')
     }
     else if (Array.isArray(network)) {
       resolvedOptions.network.push(...network)
@@ -70,7 +82,7 @@ export function configure(resolver: Resolver, options: HttpClientHintsOptions, n
       resolvedOptions.network.push(network)
     }
     if (resolvedOptions.network.length) {
-      dependsOn.push('network')
+      serverDependsOn.push('network')
     }
   }
   if (device) {
@@ -84,15 +96,15 @@ export function configure(resolver: Resolver, options: HttpClientHintsOptions, n
       resolvedOptions.device.push(device)
     }
     if (resolvedOptions.device.length) {
-      dependsOn.push('device')
+      serverDependsOn.push('device')
     }
   }
   if (critical) {
     resolvedOptions.critical = critical
-    dependsOn.push('critical')
+    serverDependsOn.push('critical')
   }
 
-  if (!dependsOn.length) {
+  if (!serverDependsOn.length) {
     return
   }
 
@@ -106,38 +118,33 @@ export function configure(resolver: Resolver, options: HttpClientHintsOptions, n
 
   nuxt.options.runtimeConfig.public.httpClientHints = resolvedOptions
 
-  addPlugin(resolver.resolve(runtimeDir, 'plugins/init.client'))
   addPlugin(resolver.resolve(runtimeDir, 'plugins/init.server'))
 
-  if (options.detectBrowser || options.detectOS) {
+  if (options.detectBrowser || options.detectOS || resolvedOptions.userAgent.length) {
+    clientDependsOn.push('detect')
+    serverDependsOn.push('detect')
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.client'))
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.server'))
   }
 
-  if (dependsOn.includes('user-agent')) {
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/user-agent.client'))
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/user-agent.server'))
-  }
-
-  if (dependsOn.includes('network')) {
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/network.client'))
+  if (serverDependsOn.includes('network')) {
     addPlugin(resolver.resolve(runtimeDir, 'plugins/network.server'))
   }
 
-  if (dependsOn.includes('device')) {
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/device.client'))
+  if (serverDependsOn.includes('device')) {
     addPlugin(resolver.resolve(runtimeDir, 'plugins/device.server'))
   }
 
-  if (dependsOn.includes('critical')) {
-    addPlugin(resolver.resolve(runtimeDir, 'plugins/critical.client'))
+  if (serverDependsOn.includes('critical')) {
     addPlugin(resolver.resolve(runtimeDir, 'plugins/critical.server'))
   }
 
+  if (clientDependsOn.length) {
+    // @ts-expect-error missing at build time
+    addClientHintsPlugin('client', clientDependsOn.map(p => `http-client-hints:${p}-client:plugin`))
+  }
   // @ts-expect-error missing at build time
-  addClientHintsPlugin('client', dependsOn.map(p => `http-client-hints:${p}-client:plugin`))
-  // @ts-expect-error missing at build time
-  addClientHintsPlugin('server', dependsOn.map(p => `http-client-hints:${p}-server:plugin`))
+  addClientHintsPlugin('server', serverDependsOn.map(p => `http-client-hints:${p}-server:plugin`))
 }
 
 function addClientHintsPlugin(
