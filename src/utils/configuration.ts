@@ -1,8 +1,13 @@
 import type { Nuxt } from '@nuxt/schema'
-import { addDevServerHandler, addServerHandler, addServerImportsDir, type Resolver } from '@nuxt/kit'
-import { addPlugin, addPluginTemplate } from '@nuxt/kit'
+import type { Resolver } from '@nuxt/kit'
+import {
+  addDevServerHandler,
+  addServerHandler,
+  addServerImportsDir,
+  addPlugin,
+  addPluginTemplate,
+} from '@nuxt/kit'
 import defu from 'defu'
-import { defineEventHandler } from 'h3'
 import type { HttpClientHintsOptions } from '../types'
 import type { ResolvedHttpClientHintsOptions } from '../runtime/shared-types/types'
 
