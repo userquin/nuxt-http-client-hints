@@ -69,7 +69,6 @@ export interface HttpClientHintsState {
   browser?: BrowserInfo
   device?: DeviceInfo
   network?: NetworkInfo
-  userAgent?: UserAgentDataInfo
   critical?: CriticalInfo
 }
 
@@ -179,4 +178,9 @@ export interface ResolvedHttpClientHintsOptions {
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints#critical_client_hints
    */
   critical?: CriticalClientHintsConfiguration
+  serverImages?: RegExp[]
+}
+
+export interface ServerHttpClientHintsOptions extends Omit<ResolvedHttpClientHintsOptions, 'serverImages'> {
+  serverImages: string[]
 }

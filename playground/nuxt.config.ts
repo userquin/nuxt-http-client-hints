@@ -14,6 +14,7 @@ export default defineNuxtConfig({
       viewportSize: true,
       prefersColorScheme: true,
     },
+    serverImages: true,
   },
 
 })
