@@ -172,7 +172,7 @@ export default defineNuxtPlugin({
     )
     return {
       provide: {
-        httpClientHints: readonly(clientHints),
+        httpClientHints: readonly(clientHints.value),
       }
     }
   }

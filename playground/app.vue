@@ -9,5 +9,6 @@
 </template>
 
 <script setup>
-
+const critical = useNuxtApp().$httpClientHints?.critical
+console.log(critical?.devicePixelRatio)
 </script>
