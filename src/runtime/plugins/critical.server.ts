@@ -1,11 +1,10 @@
 import type { parseUserAgent } from 'detect-browser-es'
 import { CriticalHintsHeaders, extractCriticalHints } from '../utils/critical'
+import type { ResolvedHttpClientHintsOptions } from '../shared-types/types'
 import { writeHeaders } from './headers'
-import { useHttpClientHintsOptions, useHttpClientHintsState } from './utils'
+import { useHttpClientHintsState } from './utils'
 import { defineNuxtPlugin, useCookie, useRequestHeaders } from '#imports'
 import type { Plugin } from '#app'
-import type { HttpClientHintsOptions } from '~/src/types'
-import type { ResolvedHttpClientHintsOptions } from '~/src/runtime/shared-types/types'
 
 const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:critical-server:plugin',
