@@ -1,5 +1,5 @@
 import { eventHandler } from 'h3'
-import { useNitro } from '@nuxt/kit'
+import { useRuntimeConfig } from 'nitropack/runtime'
 import { parseUserAgent } from 'detect-browser-es'
 import type { HttpClientHintsState, ResolvedHttpClientHintsOptions } from '../shared-types/types'
 import { extractBrowser } from '../utils/detect'
@@ -12,8 +12,9 @@ export default eventHandler(async (event) => {
   const url = event.path
   console.log(url)
   try {
-    const nitro = useNitro()
-    const options = nitro.options.runtimeConfig.public.httpClientHints as ResolvedHttpClientHintsOptions
+    const runtimeConfig = useRuntimeConfig(event)
+    console.log(runtimeConfig)
+    const options = runtimeConfig.public.httpClientHints as ResolvedHttpClientHintsOptions
     const critical = !!options.critical
     const device = options.device.length > 0
     const network = options.network.length > 0

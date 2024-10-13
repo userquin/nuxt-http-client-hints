@@ -1,13 +1,14 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { Resolver } from '@nuxt/kit'
 import {
-  addDevServerHandler,
-  addServerHandler,
+  // addDevServerHandler,
+  // addServerHandler,
   // addServerImportsDir,
   addPlugin,
   addPluginTemplate,
+  addServerPlugin,
 } from '@nuxt/kit'
-import defu from 'defu'
+// import defu from 'defu'
 import type { HttpClientHintsOptions } from '../types'
 import type { ResolvedHttpClientHintsOptions } from '../runtime/shared-types/types'
 
@@ -62,7 +63,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
   const clientOnly = nuxt.options._generate || !nuxt.options.ssr
 
   // we register the client detector only if needed and not in SSR mode
-  if ((options.detectBrowser || options.detectOS || resolvedOptions.userAgent.length) && clientOnly) {
+  if ((resolvedOptions.detectBrowser || resolvedOptions.detectOS || resolvedOptions.userAgent.length) && clientOnly) {
     nuxt.options.build.transpile.push(runtimeDir)
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ path: resolver.resolve(runtimeDir, 'plugins/types') })
@@ -128,7 +129,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
 
   addPlugin(resolver.resolve(runtimeDir, 'plugins/init.server'))
 
-  if (options.detectBrowser || options.detectOS || resolvedOptions.userAgent.length) {
+  if (resolvedOptions.detectBrowser || resolvedOptions.detectOS || resolvedOptions.userAgent.length) {
     clientDependsOn.push('detect')
     serverDependsOn.push('detect')
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.client'))
@@ -148,17 +149,17 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
   }
 
   // Add utils to nitro config
-  nuxt.hook('nitro:config', (nitroConfig) => {
+  /* nuxt.hook('nitro:config', (nitroConfig) => {
     nitroConfig.alias = nitroConfig.alias || {}
 
     // Inline module runtime in Nitro bundle
     nitroConfig.externals = defu(
       typeof nitroConfig.externals === 'object' ? nitroConfig.externals : {},
       {
-        inline: [resolver.resolve('./runtime/server/utils/index.js')],
+        inline: [resolver.resolve('./runtime/server/utils/index')],
       },
     )
-  })
+  }) */
 
   resolvedOptions.serverImages = serverImages
     ? serverImages === true
@@ -169,24 +170,41 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     : undefined
 
   if (resolvedOptions.serverImages?.length) {
+    addServerPlugin(resolver.resolve(runtimeDir, 'server/plugin'))
+    const { serverImages, ...rest } = resolvedOptions
+    nuxt.options.appConfig.httpClientHints = {
+      ...rest,
+      serverImages: serverImages.map(r => r.source),
+    }
+    /* nuxt.hook('nitro:init', (nitro) => {
+      nitro.options.appConfig.public ??= {}
+      nitro.options.appConfig.public.httpClientHints = resolvedOptions
+    })
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.runtimeConfig ??= {}
+      nitroConfig.runtimeConfig.public ??= {}
+      nitroConfig.runtimeConfig.public.httpClientHints = resolvedOptions
+    }) */
     // Add utils to server imports
     // addServerImportsDir(resolver.resolve('./runtime/utils'))
     // addServerImportsDir(resolver.resolve('./runtime/server'))
     if (nuxt.options.dev) {
-      addDevServerHandler({
+      /* addDevServerHandler({
         method: 'get',
         handler: resolver.resolve(runtimeDir, 'server/index'),
-      })
+      }) */
       /* nuxt.hook('nitro:init', (nitro) => {
         nitro.options.devHandlers.unshift({
           route: '',
           handler: resolver.resolve(runtimeDir, 'server/index'),
         })
       }) */
-      /* nuxt.options.devServerHandlers.push({
-        route: '',
+      /* nuxt.options.devServerHandlers.unshift({
+        // route: '',
+        method: 'get',
         handler: resolver.resolve(runtimeDir, 'server/index'),
-      })
+      }) */
+      /*
       addDevServerHandler({
         route: '',
         handler: defineEventHandler(async (event) => {
@@ -195,18 +213,18 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
       }) */
     }
     else {
-      addServerHandler({
+      /* addServerHandler({
         method: 'get',
         handler: resolver.resolve(runtimeDir, 'server/index'),
-      })
+      }) */
       /* nuxt.hook('nitro:init', (nitro) => {
         nitro.options.handlers.unshift({
           route: '',
           handler: resolver.resolve(runtimeDir, 'server/index'),
         })
       }) */
-      /* nuxt.options.serverHandlers.push({
-        route: '',
+      /* nuxt.options.serverHandlers.unshift({
+        // route: '',
         handler: resolver.resolve(runtimeDir, 'server/index'),
       }) */
       /* addServerHandler({

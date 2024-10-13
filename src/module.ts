@@ -33,8 +33,8 @@ export default defineNuxtModule<ModuleOptions>({
         logger: useLogger(`nuxt:${NAME}`),
         options,
         resolvedOptions: {
-          detectBrowser: false,
-          detectOS: false,
+          detectBrowser: options.detectBrowser ?? false,
+          detectOS: options.detectOS ?? false,
           userAgent: [],
           network: [],
           device: [],
