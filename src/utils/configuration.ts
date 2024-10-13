@@ -3,7 +3,7 @@ import type { Resolver } from '@nuxt/kit'
 import {
   addDevServerHandler,
   addServerHandler,
-  addServerImportsDir,
+  // addServerImportsDir,
   addPlugin,
   addPluginTemplate,
 } from '@nuxt/kit'
@@ -170,7 +170,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
 
   if (resolvedOptions.serverImages?.length) {
     // Add utils to server imports
-    addServerImportsDir(resolver.resolve('./runtime/utils'))
+    // addServerImportsDir(resolver.resolve('./runtime/utils'))
     // addServerImportsDir(resolver.resolve('./runtime/server'))
     if (nuxt.options.dev) {
       addDevServerHandler({
