@@ -1,5 +1,5 @@
 import type { DeepReadonly, UnwrapNestedRefs } from '@vue/reactivity'
-import type { asyncDetect, detect, detectOS, parseUserAgent } from 'detect-browser-es'
+import type { Browser, asyncDetect, detect, detectOS, parseUserAgent } from 'detect-browser-es'
 import type { HttpClientHintsState, UserAgentDataHints } from '../shared-types/types'
 
 declare module '#app' {
