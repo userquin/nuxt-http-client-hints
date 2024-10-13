@@ -4,17 +4,16 @@ import {
   detect,
   detectOS,
   parseUserAgent,
-  serverResponseHeadersForUserAgentHints,
 } from 'detect-browser-es'
 import { appendHeader } from 'h3'
 import type { ResolvedHttpClientHintsOptions, UserAgentHints } from '../shared-types/types'
+import { extractBrowser } from '../utils/detect'
 import { useHttpClientHintsState } from './state'
 import {
   defineNuxtPlugin,
   useNuxtApp,
   useRequestEvent,
-  useRequestHeaders,
-  useRuntimeConfig,
+  useRequestHeaders, useRuntimeConfig,
 } from '#imports'
 import type { Plugin } from '#app'
 
@@ -31,16 +30,11 @@ const plugin: Plugin = defineNuxtPlugin({
 
     const userAgentHeader = requestHeaders['user-agent']
 
-    if (httpClientHints.detectOS === 'windows-11') {
-      const hintsSet = new Set(httpClientHints.userAgent)
-      // Windows 11 detection requires platformVersion hint
-      if (!hintsSet.has('platformVersion')) {
-        hintsSet.add('platformVersion')
-      }
-      const hints = Array.from(hintsSet)
-      // write headers
-      const headers = serverResponseHeadersForUserAgentHints(hints)
-      if (headers) {
+    const browser = await extractBrowser(
+      httpClientHints,
+      requestHeaders,
+      userAgentHeader,
+      (headers) => {
         const nuxtApp = useNuxtApp()
         const callback = () => {
           const event = useRequestEvent(nuxtApp)
@@ -57,21 +51,11 @@ const plugin: Plugin = defineNuxtPlugin({
           unhook()
           return callback()
         })
-      }
-      // detect browser info
-      const browserInfo = await asyncDetect({
-        hints,
-        httpHeaders: requestHeaders,
-      })
-      if (browserInfo) {
-        state.value.browser = JSON.parse(JSON.stringify(browserInfo))
-      }
-    }
-    else if (userAgentHeader) {
-      const browserInfo = detect(userAgentHeader)
-      if (browserInfo) {
-        state.value.browser = JSON.parse(JSON.stringify(browserInfo))
-      }
+      },
+    )
+
+    if (browser) {
+      state.value.browser = JSON.parse(JSON.stringify(browser))
     }
 
     return {

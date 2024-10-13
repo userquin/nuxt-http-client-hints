@@ -1,6 +1,8 @@
 import type { Nuxt } from '@nuxt/schema'
-import type { Resolver } from '@nuxt/kit'
+import { addDevServerHandler, addServerHandler, addServerImportsDir, type Resolver } from '@nuxt/kit'
 import { addPlugin, addPluginTemplate } from '@nuxt/kit'
+import defu from 'defu'
+import { defineEventHandler } from 'h3'
 import type { HttpClientHintsOptions } from '../types'
 import type { ResolvedHttpClientHintsOptions } from '../runtime/shared-types/types'
 
@@ -32,6 +34,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     network,
     device,
     critical,
+    serverImages,
   } = options
   if (userAgent) {
     if (userAgent === true) {
@@ -137,6 +140,77 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
 
   if (serverDependsOn.includes('critical')) {
     addPlugin(resolver.resolve(runtimeDir, 'plugins/critical.server'))
+  }
+
+  // Add utils to nitro config
+  nuxt.hook('nitro:config', (nitroConfig) => {
+    nitroConfig.alias = nitroConfig.alias || {}
+
+    // Inline module runtime in Nitro bundle
+    nitroConfig.externals = defu(
+      typeof nitroConfig.externals === 'object' ? nitroConfig.externals : {},
+      {
+        inline: [resolver.resolve('./runtime/server/utils/index.js')],
+      },
+    )
+  })
+
+  resolvedOptions.serverImages = serverImages
+    ? serverImages === true
+      ? [/\.(png|jpeg|jpg|webp|avi)$/]
+      : Array.isArray(serverImages)
+        ? serverImages
+        : [serverImages]
+    : undefined
+
+  if (resolvedOptions.serverImages?.length) {
+    // Add utils to server imports
+    addServerImportsDir(resolver.resolve('./runtime/utils'))
+    // addServerImportsDir(resolver.resolve('./runtime/server'))
+    if (nuxt.options.dev) {
+      addDevServerHandler({
+        method: 'get',
+        handler: resolver.resolve(runtimeDir, 'server/index'),
+      })
+      /* nuxt.hook('nitro:init', (nitro) => {
+        nitro.options.devHandlers.unshift({
+          route: '',
+          handler: resolver.resolve(runtimeDir, 'server/index'),
+        })
+      }) */
+      /* nuxt.options.devServerHandlers.push({
+        route: '',
+        handler: resolver.resolve(runtimeDir, 'server/index'),
+      })
+      addDevServerHandler({
+        route: '',
+        handler: defineEventHandler(async (event) => {
+
+        }),
+      }) */
+    }
+    else {
+      addServerHandler({
+        method: 'get',
+        handler: resolver.resolve(runtimeDir, 'server/index'),
+      })
+      /* nuxt.hook('nitro:init', (nitro) => {
+        nitro.options.handlers.unshift({
+          route: '',
+          handler: resolver.resolve(runtimeDir, 'server/index'),
+        })
+      }) */
+      /* nuxt.options.serverHandlers.push({
+        route: '',
+        handler: resolver.resolve(runtimeDir, 'server/index'),
+      }) */
+      /* addServerHandler({
+        route: '',
+        handler: defineEventHandler(async (event) => {
+
+        }),
+      }) */
+    }
   }
 
   if (clientDependsOn.length) {
