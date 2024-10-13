@@ -180,3 +180,7 @@ export interface ResolvedHttpClientHintsOptions {
   critical?: CriticalClientHintsConfiguration
   serverImages?: RegExp[]
 }
+
+export interface ServerHttpClientHintsOptions extends Omit<ResolvedHttpClientHintsOptions, 'serverImages'> {
+  serverImages: string[]
+}

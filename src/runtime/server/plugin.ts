@@ -1,24 +1,23 @@
 import { defineNitroPlugin, useAppConfig } from 'nitropack/runtime'
 import { parseUserAgent } from 'detect-browser-es'
-import type { HttpClientHintsState, ResolvedHttpClientHintsOptions } from '../shared-types/types'
+import type {
+  HttpClientHintsState,
+  ResolvedHttpClientHintsOptions,
+  ServerHttpClientHintsOptions,
+} from '../shared-types/types'
 import { extractBrowser } from '../utils/detect'
 import { extractCriticalHints } from '../utils/critical'
 import { extractDeviceHints } from '../utils/device'
 import { extractNetworkHints } from '../utils/network'
 
-interface ServerRuntimeConfig extends Omit<ResolvedHttpClientHintsOptions, 'serverImages'> {
-  serverImages: string[]
-}
-
 export default defineNitroPlugin((nitroApp) => {
-  const { serverImages, ...rest } = useAppConfig().httpClientHints as ServerRuntimeConfig
+  const { serverImages, ...rest } = useAppConfig().httpClientHints as ServerHttpClientHintsOptions
   const options: ResolvedHttpClientHintsOptions = {
     ...rest,
     serverImages: serverImages.map(r => new RegExp(r)),
   }
-  console.log(options)
-  nitroApp.hooks.hook('afterResponse', async (event) => {
-    // we should add the vary header to the response
+  nitroApp.hooks.hook('afterResponse', async (_event) => {
+    // we should add the Vary header to the response: is there a way to check if the response has been committed?
   })
   nitroApp.hooks.hook('request', async (event) => {
     // expose the client hints in the context
@@ -48,14 +47,14 @@ export default defineNitroPlugin((nitroApp) => {
         if (detect) {
           clientHints.browser = await extractBrowser(options, requestHeaders as Record<string, string>, userAgentHeader ?? undefined)
         }
-        if (critical) {
-          clientHints.critical = extractCriticalHints(options, requestHeaders, userAgent)
-        }
         if (device) {
           clientHints.device = extractDeviceHints(options, requestHeaders, userAgent)
         }
         if (network) {
           clientHints.network = extractNetworkHints(options, requestHeaders, userAgent)
+        }
+        if (critical) {
+          clientHints.critical = extractCriticalHints(options, requestHeaders, userAgent)
         }
         event.context.httpClientHints = clientHints
       }

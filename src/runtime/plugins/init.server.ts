@@ -1,5 +1,5 @@
 import { parseUserAgent } from 'detect-browser-es'
-import { useHttpClientHintsState } from './state'
+import { useHttpClientHintsState } from './utils'
 import { defineNuxtPlugin, useRequestHeaders } from '#imports'
 import type { Plugin } from '#app'
 

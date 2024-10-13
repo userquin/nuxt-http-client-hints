@@ -125,8 +125,6 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     resolvedOptions.detectOS = options.detectOS
   }
 
-  nuxt.options.runtimeConfig.public.httpClientHints = resolvedOptions
-
   addPlugin(resolver.resolve(runtimeDir, 'plugins/init.server'))
 
   if (resolvedOptions.detectBrowser || resolvedOptions.detectOS || resolvedOptions.userAgent.length) {
@@ -161,7 +159,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     )
   }) */
 
-  resolvedOptions.serverImages = serverImages
+  const useServerImages = serverImages
     ? serverImages === true
       ? [/\.(png|jpeg|jpg|webp|avi)$/]
       : Array.isArray(serverImages)
@@ -169,13 +167,14 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
         : [serverImages]
     : undefined
 
+  const { serverImages: _, ...rest } = resolvedOptions
+  nuxt.options.appConfig.httpClientHints = {
+    ...rest,
+    serverImages: useServerImages ? useServerImages.map(r => r.source) : undefined,
+  }
+
   if (resolvedOptions.serverImages?.length) {
     addServerPlugin(resolver.resolve(runtimeDir, 'server/plugin'))
-    const { serverImages, ...rest } = resolvedOptions
-    nuxt.options.appConfig.httpClientHints = {
-      ...rest,
-      serverImages: serverImages.map(r => r.source),
-    }
     /* nuxt.hook('nitro:init', (nitro) => {
       nitro.options.appConfig.public ??= {}
       nitro.options.appConfig.public.httpClientHints = resolvedOptions

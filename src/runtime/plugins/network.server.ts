@@ -1,10 +1,9 @@
 import type { parseUserAgent } from 'detect-browser-es'
 import { extractNetworkHints, NetworkHintsHeaders } from '../utils/network'
-import { useHttpClientHintsState } from './state'
+import { useHttpClientHintsOptions, useHttpClientHintsState } from './utils'
 import { writeHeaders } from './headers'
-import { defineNuxtPlugin, useRequestHeaders, useRuntimeConfig } from '#imports'
+import { defineNuxtPlugin, useRequestHeaders } from '#imports'
 import type { Plugin } from '#app'
-import type { ResolvedHttpClientHintsOptions } from '~/src/runtime/shared-types/types'
 
 const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:network-server:plugin',
@@ -15,7 +14,7 @@ const plugin: Plugin = defineNuxtPlugin({
   setup(nuxtApp) {
     const state = useHttpClientHintsState()
     const userAgent = nuxtApp.ssrContext?._httpClientHintsUserAgent as ReturnType<typeof parseUserAgent>
-    const httpClientHints = useRuntimeConfig().public.httpClientHints as ResolvedHttpClientHintsOptions
+    const httpClientHints = useHttpClientHintsOptions()
     const requestHeaders = useRequestHeaders<string>(NetworkHintsHeaders)
     state.value.network = extractNetworkHints(httpClientHints, requestHeaders, userAgent, writeHeaders)
   },
