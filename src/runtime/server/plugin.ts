@@ -11,7 +11,10 @@ import { extractDeviceHints } from '../utils/device'
 import { extractNetworkHints } from '../utils/network'
 
 export default defineNitroPlugin((nitroApp) => {
-  const { serverImages, ...rest } = useAppConfig().httpClientHints as ServerHttpClientHintsOptions
+  const {
+    serverImages,
+    ...rest
+  } = useAppConfig().httpClientHints as ServerHttpClientHintsOptions
   const options: ResolvedHttpClientHintsOptions = {
     ...rest,
     serverImages: serverImages.map(r => new RegExp(r)),
@@ -20,7 +23,7 @@ export default defineNitroPlugin((nitroApp) => {
     // we should add the Vary header to the response: is there a way to check if the response has been committed?
   })
   nitroApp.hooks.hook('request', async (event) => {
-    // expose the client hints in the context
+  // expose the client hints in the context
     const url = event.path
     console.log(url)
     try {
