@@ -4,6 +4,8 @@ import { writeHeaders } from './headers'
 import { useHttpClientHintsOptions, useHttpClientHintsState } from './utils'
 import { defineNuxtPlugin, useCookie, useRequestHeaders } from '#imports'
 import type { Plugin } from '#app'
+import type { HttpClientHintsOptions } from '~/src/types'
+import type { ResolvedHttpClientHintsOptions } from '~/src/runtime/shared-types/types'
 
 const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:critical-server:plugin',
@@ -12,10 +14,11 @@ const plugin: Plugin = defineNuxtPlugin({
   // @ts-expect-error missing at build time
   dependsOn: ['http-client-hints:init-server:plugin'],
   async setup(nuxtApp) {
+    const ssrContext = nuxtApp.ssrContext!
+    const httpClientHints = ssrContext._httpClientHintsOptions as ResolvedHttpClientHintsOptions
+    const userAgent = ssrContext._httpClientHintsUserAgent as ReturnType<typeof parseUserAgent>
     const state = useHttpClientHintsState()
-    const httpClientHints = useHttpClientHintsOptions()
     const requestHeaders = useRequestHeaders<string>(CriticalHintsHeaders)
-    const userAgent = nuxtApp.ssrContext?._httpClientHintsUserAgent as ReturnType<typeof parseUserAgent>
     state.value.critical = extractCriticalHints(
       httpClientHints,
       requestHeaders,
