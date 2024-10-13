@@ -1,7 +1,7 @@
 {
   "name": "nuxt-http-client-hints",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packageManager": "pnpm@9.12.1",
   "description": "Nuxt HTTP Client Hints",
   "author": "userquin <userquin@gmail.com>",
