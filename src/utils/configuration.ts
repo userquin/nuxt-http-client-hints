@@ -192,7 +192,7 @@ function addClientHintsPlugin(
       return `import { defineNuxtPlugin, readonly, useState } from '#imports'
 export default defineNuxtPlugin({
   name: '${name}',
-  order: 'post',
+  enforce: 'post',
   parallel: false,${dependsOnString}
   async setup(nuxtApp) {
     const clientHints = useState('http-client-hints:state')
