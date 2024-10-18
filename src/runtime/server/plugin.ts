@@ -26,8 +26,7 @@ export default defineNitroPlugin((nitroApp) => {
 
   // todo: remove this just for testing purposes
   nitroApp.hooks.hook('afterResponse', async (event) => {
-    // We should add the Vary header to the response: is there a way to check if the response has been committed?.
-    // I guess the vary header whould be added by the consule, there are a lot of header here to handle.
+    // I guess the consumer should add the Vary header; there are a lot of headers here to handle.
     const receivedOptions = event.context.httpClientHintsOptions
     if (receivedOptions) {
       console.log(`Client Hints for ${event.path}`, event.context.httpClientHints)
