@@ -8,7 +8,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const critical = useNuxtApp().$httpClientHints?.critical
 console.log(critical?.devicePixelRatio)
 </script>

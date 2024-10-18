@@ -2,6 +2,7 @@ import type { Nuxt } from '@nuxt/schema'
 import type { Resolver } from '@nuxt/kit'
 import {
   // addDevServerHandler,
+  // addDevServerHandler,
   // addServerHandler,
   // addServerImportsDir,
   addPlugin,
@@ -19,7 +20,6 @@ export interface HttpClientHintsContext {
   logger: ReturnType<typeof import('@nuxt/kit')['useLogger']>
   options: HttpClientHintsOptions
   resolvedOptions: ResolvedHttpClientHintsOptions
-  clientDependsOn: PluginType[]
   serverDependsOn: PluginType[]
 }
 
@@ -29,7 +29,6 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     resolvedOptions,
     resolver,
     logger,
-    clientDependsOn,
     serverDependsOn,
   } = ctx
 
@@ -40,7 +39,6 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     network,
     device,
     critical,
-    serverImages,
   } = options
   if (userAgent) {
     if (userAgent === true) {
@@ -66,7 +64,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
   if ((resolvedOptions.detectBrowser || resolvedOptions.detectOS || resolvedOptions.userAgent.length) && clientOnly) {
     nuxt.options.build.transpile.push(runtimeDir)
     nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolver.resolve(runtimeDir, 'plugins/types') })
+      references.push({ path: resolver.resolve(runtimeDir, 'plugins/types.d.ts') })
     })
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.client'))
     return
@@ -77,8 +75,6 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     logger.warn('http-client-hints module is only supported in SSR mode')
     return
   }
-
-  nuxt.options.build.transpile.push(runtimeDir)
 
   if (network) {
     if (network === true) {
@@ -118,17 +114,21 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
   }
 
   nuxt.hook('prepare:types', ({ references }) => {
-    references.push({ path: resolver.resolve(runtimeDir, 'plugins/types') })
+    references.push({ path: resolver.resolve(runtimeDir, 'plugins/types.d.ts') })
   })
 
   if (options.detectOS) {
     resolvedOptions.detectOS = options.detectOS
   }
 
+  // transpile runtime
+  nuxt.options.build.transpile.push(runtimeDir)
+  // transpile http client hints plugins
+  nuxt.options.build.transpile.push(/\/http-client-hints\.(client|server)\.mjs$/)
+
   addPlugin(resolver.resolve(runtimeDir, 'plugins/init.server'))
 
   if (resolvedOptions.detectBrowser || resolvedOptions.detectOS || resolvedOptions.userAgent.length) {
-    clientDependsOn.push('detect')
     serverDependsOn.push('detect')
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.client'))
     addPlugin(resolver.resolve(runtimeDir, 'plugins/detect.server'))
@@ -146,18 +146,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     addPlugin(resolver.resolve(runtimeDir, 'plugins/critical.server'))
   }
 
-  // Add utils to nitro config
-  /* nuxt.hook('nitro:config', (nitroConfig) => {
-    nitroConfig.alias = nitroConfig.alias || {}
-
-    // Inline module runtime in Nitro bundle
-    nitroConfig.externals = defu(
-      typeof nitroConfig.externals === 'object' ? nitroConfig.externals : {},
-      {
-        inline: [resolver.resolve('./runtime/server/utils/index')],
-      },
-    )
-  }) */
+  const serverImages = options.serverImages
 
   const useServerImages = serverImages
     ? serverImages === true
@@ -173,79 +162,21 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     serverImages: useServerImages ? useServerImages.map(r => r.source) : undefined,
   }
 
-  if (resolvedOptions.serverImages?.length) {
+  if (useServerImages?.length) {
     addServerPlugin(resolver.resolve(runtimeDir, 'server/plugin'))
-    /* nuxt.hook('nitro:init', (nitro) => {
-      nitro.options.appConfig.public ??= {}
-      nitro.options.appConfig.public.httpClientHints = resolvedOptions
-    })
-    nuxt.hook('nitro:config', (nitroConfig) => {
-      nitroConfig.runtimeConfig ??= {}
-      nitroConfig.runtimeConfig.public ??= {}
-      nitroConfig.runtimeConfig.public.httpClientHints = resolvedOptions
-    }) */
-    // Add utils to server imports
-    // addServerImportsDir(resolver.resolve('./runtime/utils'))
-    // addServerImportsDir(resolver.resolve('./runtime/server'))
-    if (nuxt.options.dev) {
-      /* addDevServerHandler({
-        method: 'get',
-        handler: resolver.resolve(runtimeDir, 'server/index'),
-      }) */
-      /* nuxt.hook('nitro:init', (nitro) => {
-        nitro.options.devHandlers.unshift({
-          route: '',
-          handler: resolver.resolve(runtimeDir, 'server/index'),
-        })
-      }) */
-      /* nuxt.options.devServerHandlers.unshift({
-        // route: '',
-        method: 'get',
-        handler: resolver.resolve(runtimeDir, 'server/index'),
-      }) */
-      /*
-      addDevServerHandler({
-        route: '',
-        handler: defineEventHandler(async (event) => {
-
-        }),
-      }) */
-    }
-    else {
-      /* addServerHandler({
-        method: 'get',
-        handler: resolver.resolve(runtimeDir, 'server/index'),
-      }) */
-      /* nuxt.hook('nitro:init', (nitro) => {
-        nitro.options.handlers.unshift({
-          route: '',
-          handler: resolver.resolve(runtimeDir, 'server/index'),
-        })
-      }) */
-      /* nuxt.options.serverHandlers.unshift({
-        // route: '',
-        handler: resolver.resolve(runtimeDir, 'server/index'),
-      }) */
-      /* addServerHandler({
-        route: '',
-        handler: defineEventHandler(async (event) => {
-
-        }),
-      }) */
-    }
+    // todo: check dev handlers and event handler in build + node ...
+    // there is no way to have the plugin working in dev mode: the dev handler called for jpg images
+    // running build + node ... the plugin is registered but the image event handler is not called for jpg images
   }
 
-  if (clientDependsOn.length) {
-    // @ts-expect-error missing at build time
-    addClientHintsPlugin('client', clientDependsOn.map(p => `http-client-hints:${p}-client:plugin`))
-  }
+  addClientHintsPlugin('client')
   // @ts-expect-error missing at build time
   addClientHintsPlugin('server', serverDependsOn.map(p => `http-client-hints:${p}-server:plugin`))
 }
 
 function addClientHintsPlugin(
   mode: 'client' | 'server',
-  dependsOn: import('#app').NuxtAppLiterals['pluginName'][],
+  dependsOn: import('#app').NuxtAppLiterals['pluginName'][] = [],
 ) {
   const name = `http-client-hints:${mode}:plugin`
   addPluginTemplate({
@@ -254,12 +185,15 @@ function addClientHintsPlugin(
     mode: `${mode}`,
     write: false,
     getContents() {
+      const dependsOnString = dependsOn.length
+        ? `
+  dependsOn: ${JSON.stringify(dependsOn)},`
+        : ''
       return `import { defineNuxtPlugin, readonly, useState } from '#imports'
 export default defineNuxtPlugin({
   name: '${name}',
-  order: 'pre',
-  dependsOn: ${JSON.stringify(dependsOn)},
-  parallel: false,
+  order: 'post',
+  parallel: false,${dependsOnString}
   async setup(nuxtApp) {
     const clientHints = useState('http-client-hints:state')
     await nuxtApp.hooks.callHook(

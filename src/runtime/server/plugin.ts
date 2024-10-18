@@ -19,24 +19,25 @@ export default defineNitroPlugin((nitroApp) => {
     ...rest,
     serverImages: serverImages.map(r => new RegExp(r)),
   }
-  nitroApp.hooks.hook('afterResponse', async (_event) => {
-    // we should add the Vary header to the response: is there a way to check if the response has been committed?
-  })
-  nitroApp.hooks.hook('request', async (event) => {
-  // expose the client hints in the context
-    const url = event.path
-    console.log(url)
-    try {
-      const critical = !!options.critical
-      const device = options.device.length > 0
-      const network = options.network.length > 0
-      const detect = options.detectOS || options.detectBrowser || options.userAgent.length > 0
-      if (!critical && !device && !network && !detect) {
-        return undefined
-      }
+  const critical = !!options.critical
+  const device = options.device.length > 0
+  const network = options.network.length > 0
+  const detect = options.detectOS || options.detectBrowser || options.userAgent.length > 0
 
+  // todo: remove this just for testing purposes
+  nitroApp.hooks.hook('afterResponse', async (event) => {
+    // We should add the Vary header to the response: is there a way to check if the response has been committed?.
+    // I guess the vary header whould be added by the consule, there are a lot of header here to handle.
+    const receivedOptions = event.context.httpClientHintsOptions
+    if (receivedOptions) {
+      console.log(`Client Hints for ${event.path}`, event.context.httpClientHints)
+    }
+  })
+
+  nitroApp.hooks.hook('request', async (event) => {
+    try {
       // expose the client hints in the context
-      // const url = event.path
+      const url = event.path
       if (options.serverImages?.some(r => url.match(r))) {
         const userAgentHeader = event.headers.get('user-agent')
         const requestHeaders: { [key in Lowercase<string>]?: string } = {}
@@ -59,6 +60,7 @@ export default defineNitroPlugin((nitroApp) => {
         if (critical) {
           clientHints.critical = extractCriticalHints(options, requestHeaders, userAgent)
         }
+        event.context.httpClientHintsOptions = options
         event.context.httpClientHints = clientHints
       }
     }

@@ -8,7 +8,7 @@ import type { Plugin } from '#app'
 
 const plugin: Plugin = defineNuxtPlugin({
   name: 'http-client-hints:network-server:plugin',
-  enforce: 'pre',
+  enforce: 'post',
   parallel: true,
   // @ts-expect-error missing at build time
   dependsOn: ['http-client-hints:init-server:plugin'],

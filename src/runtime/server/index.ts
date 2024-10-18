@@ -10,10 +10,10 @@ import { extractNetworkHints } from '../utils/network'
 export default eventHandler(async (event) => {
   // expose the client hints in the context
   const url = event.path
-  console.log(url)
+  // console.log(`eventHandler: ${url}`)
   try {
-    const runtimeConfig = useRuntimeConfig(event)
-    console.log(runtimeConfig)
+    const runtimeConfig = useRuntimeConfig()
+    // console.log(runtimeConfig)
     const options = runtimeConfig.public.httpClientHints as ResolvedHttpClientHintsOptions
     const critical = !!options.critical
     const device = options.device.length > 0
@@ -25,7 +25,7 @@ export default eventHandler(async (event) => {
 
     // expose the client hints in the context
     // const url = event.path
-    console.log(url)
+    // console.log(url)
     if (options.serverImages?.some(r => r.test(url))) {
       const userAgentHeader = event.headers.get('user-agent')
       const requestHeaders: { [key in Lowercase<string>]?: string } = {}
