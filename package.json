@@ -17,7 +17,7 @@
     "Device Client Hints",
     "Network Client Hints",
     "Browser detection",
-    "nuxt module"
+    "Nuxt module"
   ],
   "sideEffects": false,
   "exports": {

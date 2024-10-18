@@ -1,5 +1,5 @@
 import { parseUserAgent } from 'detect-browser-es'
-import { useHttpClientHintsState } from './state'
+import { useHttpClientHintsOptions, useHttpClientHintsState } from './utils'
 import { defineNuxtPlugin, useRequestHeaders } from '#imports'
 import type { Plugin } from '#app'
 
@@ -12,6 +12,7 @@ const plugin: Plugin = defineNuxtPlugin({
     const ssrContext = nuxtApp.ssrContext!
     const requestHeaders = useRequestHeaders<string>(['user-agent'])
     const userAgentHeader = requestHeaders['user-agent']
+    ssrContext._httpClientHintsOptions = useHttpClientHintsOptions()
     ssrContext._httpClientHintsUserAgent = userAgentHeader
       ? parseUserAgent(userAgentHeader)
       : null
