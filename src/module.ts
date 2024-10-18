@@ -39,7 +39,6 @@ export default defineNuxtModule<ModuleOptions>({
           network: [],
           device: [],
         },
-        clientDependsOn: [],
         serverDependsOn: [],
       },
       nuxt,
