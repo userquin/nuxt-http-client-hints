@@ -1,12 +1,12 @@
 import type { Nuxt } from '@nuxt/schema'
-import type { Resolver } from '@nuxt/kit'
+import { addDevServerHandler, type Resolver } from '@nuxt/kit'
 import {
   // addDevServerHandler,
   // addDevServerHandler,
   // addServerHandler,
   // addServerImportsDir,
   addPlugin,
-  addPluginTemplate,
+  addPluginTemplate, addServerHandler,
   addServerPlugin,
 } from '@nuxt/kit'
 // import defu from 'defu'
@@ -163,7 +163,24 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
   }
 
   if (useServerImages?.length) {
-    addServerPlugin(resolver.resolve(runtimeDir, 'server/plugin'))
+    /* addServerHandler({
+      handler: resolver.resolve(runtimeDir, 'server/index'),
+      route: '',
+      middleware: true,
+      lazy: true,
+    }) */
+    // addServerPlugin(resolver.resolve(runtimeDir, 'server/plugin'))
+    /* addServerHandler({
+      handler: resolver.resolve(runtimeDir, 'server/index'),
+      route: '',
+      middleware: true,
+      lazy: true,
+    }) */
+    /* addDevServerHandler({
+      // @ts-expect-error ignore types
+      handler: resolver.resolve(runtimeDir, 'server/index'),
+      route: '',
+    }) */
     // todo: check dev handlers and event handler in build + node ...
     // there is no way to have the plugin working in dev mode: the dev handler called for jpg images
     // running build + node ... the plugin is registered but the image event handler is not called for jpg images

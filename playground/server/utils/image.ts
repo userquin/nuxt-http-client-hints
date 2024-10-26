@@ -1,21 +1,22 @@
 import { useAppConfig } from 'nitropack/runtime'
+import type { H3Event } from 'h3'
 import { parseUserAgent } from 'detect-browser-es'
+import { useNitro } from '@nuxt/kit'
 import type {
   HttpClientHintsState,
   ResolvedHttpClientHintsOptions,
   ServerHttpClientHintsOptions,
-} from '../../src/runtime/shared-types/types'
-import { extractBrowser } from '../../src/runtime/utils/detect'
-import { extractDeviceHints } from '../../src/runtime/utils/device'
-import { extractNetworkHints } from '../../src/runtime/utils/network'
-import { extractCriticalHints } from '../../src/runtime/utils/critical'
+} from '../../../src/runtime/shared-types/types'
+import { extractBrowser } from '../../../src/runtime/utils/detect'
+import { extractDeviceHints } from '../../../src/runtime/utils/device'
+import { extractNetworkHints } from '../../../src/runtime/utils/network'
+import { extractCriticalHints } from '../../../src/runtime/utils/critical'
 
-export default defineEventHandler(async (event) => {
-  console.log('request', useAppConfig().httpClientHints)
+export async function extractHTTPClientHints(event: H3Event) {
   const {
     serverImages,
     ...rest
-  } = useAppConfig().httpClientHints as ServerHttpClientHintsOptions
+  } = useNitro().options.appConfig.httpClientHints as ServerHttpClientHintsOptions
   const options: ResolvedHttpClientHintsOptions = {
     ...rest,
     serverImages: serverImages.map(r => new RegExp(r)),
@@ -58,4 +59,4 @@ export default defineEventHandler(async (event) => {
   catch (err) {
     console.error(err)
   }
-})
+}

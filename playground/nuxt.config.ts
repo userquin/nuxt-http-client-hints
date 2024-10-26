@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     handlers: [
       {
         middleware: true,
+        // route: '',
         handler: '~/server/image',
       },
     ],

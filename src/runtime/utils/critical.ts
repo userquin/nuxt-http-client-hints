@@ -7,6 +7,10 @@ import type {
 import { lookupHeader, writeClientHintHeaders } from './headers'
 import { browserFeatureAvailable } from './features'
 
+// TODO: add `Sec-CH-Prefers-Contrast` and `Sec-CH-Forced-Colors` headers
+// - https://github.com/WICG/user-preference-media-features-headers
+// - https://browserleaks.com/client-hints#:~:text=Sec%2DCH%2DWidth%20gives%20a,user%2Dagent's%20current%20viewport%20height.
+
 const AcceptClientHintsHeaders = {
   prefersColorScheme: 'Sec-CH-Prefers-Color-Scheme',
   prefersReducedMotion: 'Sec-CH-Prefers-Reduced-Motion',

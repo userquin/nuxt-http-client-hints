@@ -37,6 +37,7 @@ export default defineNitroPlugin((nitroApp) => {
     try {
       // expose the client hints in the context
       const url = event.path
+      console.log('request', { url, match: options.serverImages?.some(r => url.match(r)) })
       if (options.serverImages?.some(r => url.match(r))) {
         const userAgentHeader = event.headers.get('user-agent')
         const requestHeaders: { [key in Lowercase<string>]?: string } = {}
