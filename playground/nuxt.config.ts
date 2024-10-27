@@ -1,9 +1,11 @@
-import DevImage from './server/dev-image'
-
 export default defineNuxtConfig({
   compatibilityDate: '2024-10-11',
   devtools: { enabled: true },
   modules: ['../src/module'],
+
+  future: {
+    compatibilityVersion: 4,
+  },
 
   httpClientHints: {
     detectBrowser: true,
@@ -20,17 +22,17 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    handlers: [
+    /* handlers: [
       {
         middleware: true,
         // route: '',
-        handler: '~/server/image',
+        handler: './server/image',
       },
-    ],
-    devHandlers: [{
+    ], */
+    /* devHandlers: [{
       route: '',
       handler: DevImage,
-    }],
+    }], */
   },
 
 })

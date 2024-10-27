@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "nuxt": "^3.13.2",
-    "nuxt-http-client-hints": "workspace:*",
     "sharp": "^0.33.5"
   },
   "devDependencies": {

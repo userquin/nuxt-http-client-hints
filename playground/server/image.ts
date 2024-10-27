@@ -1,61 +1,83 @@
-import { useAppConfig } from 'nitropack/runtime'
-import { parseUserAgent } from 'detect-browser-es'
-import type {
-  HttpClientHintsState,
-  ResolvedHttpClientHintsOptions,
-  ServerHttpClientHintsOptions,
-} from '../../src/runtime/shared-types/types'
-import { extractBrowser } from '../../src/runtime/utils/detect'
-import { extractDeviceHints } from '../../src/runtime/utils/device'
-import { extractNetworkHints } from '../../src/runtime/utils/network'
-import { extractCriticalHints } from '../../src/runtime/utils/critical'
+import { lstat, readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { Readable } from 'node:stream'
+import { fileURLToPath } from 'node:url'
+import { lazyEventHandler, eventHandler, sendStream } from 'h3'
+import sharp from 'sharp'
+import { extractImageClientHints } from '../../src/runtime/server/utils'
+import type { ResolvedHttpClientHintsOptions, ServerHttpClientHintsOptions } from '../../src/runtime/server/utils'
+// import { readAsset } from '#internal/nitro/virtual/public-assets-data'
 
-export default defineEventHandler(async (event) => {
-  console.log('request', useAppConfig().httpClientHints)
+export default lazyEventHandler(() => {
+  const appConfig = useAppConfig()
+  const nitroApp = useNitroApp()
   const {
     serverImages,
     ...rest
-  } = useAppConfig().httpClientHints as ServerHttpClientHintsOptions
+  } = appConfig.httpClientHints as ServerHttpClientHintsOptions
   const options: ResolvedHttpClientHintsOptions = {
     ...rest,
     serverImages: serverImages.map(r => new RegExp(r)),
   }
-  const critical = !!options.critical
-  const device = options.device.length > 0
-  const network = options.network.length > 0
-  const detect = options.detectOS || options.detectBrowser || options.userAgent.length > 0
 
-  try {
-    // expose the client hints in the context
-    const url = event.path
-    console.log('request', { url, match: options.serverImages?.some(r => url.match(r)) })
-    if (options.serverImages?.some(r => url.match(r))) {
-      const userAgentHeader = event.headers.get('user-agent')
-      const requestHeaders: { [key in Lowercase<string>]?: string } = {}
-      for (const [key, value] of event.headers.entries()) {
-        requestHeaders[key.toLowerCase() as Lowercase<string>] = value
+  const publicFolder = resolve(fileURLToPath(import.meta.url), '../../public')
+
+  const handler = eventHandler(async (event) => {
+    console.log('dev-image', event.path)
+    const clientHints = await extractImageClientHints(event, options)
+    console.log('dev-image', event.path, clientHints?.httpClientHints.critical)
+    if (clientHints) {
+      const {
+        widthAvailable = false,
+        width = -1,
+      } = clientHints.httpClientHints.critical ?? {}
+      if (widthAvailable && width > -1) {
+        const image = await convertImage(event.path, width)
+        if (image) {
+          console.log('dev-image:Sec-CH-Width:', width)
+          event.node.res.setHeader('Vary', 'Sec-CH-Width')
+          return sendStream(event, Readable.from(image))
+        }
       }
-      const userAgent = userAgentHeader
-        ? parseUserAgent(userAgentHeader)
-        : null
-      const clientHints: HttpClientHintsState = {}
-      if (detect) {
-        clientHints.browser = await extractBrowser(options, requestHeaders as Record<string, string>, userAgentHeader ?? undefined)
+    }
+  })
+
+  async function convertImage(path: string, width: number) {
+    /* try {
+      const image = await readAsset(path)
+      if (image) {
+        return await sharp(image).resize({ width }).toBuffer()
       }
-      if (device) {
-        clientHints.device = extractDeviceHints(options, requestHeaders, userAgent)
+    }
+    catch (e) {
+      // just ignore
+      console.error('WTF', e)
+    } */
+
+    // return undefined
+    if (path.startsWith('/')) {
+      path = path.slice(1)
+    }
+    // const folders = appConfig.publicAssets
+    // let image: string
+    // for (const folder of folders) {
+    try {
+      const image = resolve(publicFolder, path)
+      const stats = await lstat(image)
+      if (stats.isFile()) {
+        return await sharp(await readFile(image)).resize({ width }).toBuffer()
       }
-      if (network) {
-        clientHints.network = extractNetworkHints(options, requestHeaders, userAgent)
-      }
-      if (critical) {
-        clientHints.critical = extractCriticalHints(options, requestHeaders, userAgent)
-      }
-      event.context.httpClientHintsOptions = options
-      event.context.httpClientHints = clientHints
+    }
+    catch {
+      // just ignore
     }
   }
-  catch (err) {
-    console.error(err)
-  }
+  // }
+
+  nitroApp.h3App.stack.unshift({
+    route: '',
+    handler,
+  })
+
+  return eventHandler(() => {})
 })

@@ -25,10 +25,19 @@
       "types": "./dist/types.d.mts",
       "default": "./dist/module.mjs"
     },
+    "./server-utils": {
+      "types": "./dist/runtime/server/utils.d.ts",
+      "default": "./dist/runtime/server/utils.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/module.mjs",
   "types": "./dist/types.d.ts",
+  "typesVersions": {
+    "*": {
+      "server-utils": ["./dist/runtime/server/utils.d.ts"]
+    }
+  },
   "files": [
     "dist"
   ],
@@ -44,10 +53,10 @@
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.13.2",
     "detect-browser-es": "^0.1.1"
   },
   "devDependencies": {
+    "@nuxt/kit": "^3.13.2",
     "@nuxt/devtools": "^1.5.0",
     "@nuxt/eslint-config": "^0.5.7",
     "@nuxt/module-builder": "^0.8.4",
@@ -61,6 +70,9 @@
     "typescript": "^5.6.3",
     "vitest": "^2.1.1",
     "vue-tsc": "^2.1.6"
+  },
+  "build": {
+    "externals": ["h3"]
   },
   "stackblitz": {
     "installDependencies": false,

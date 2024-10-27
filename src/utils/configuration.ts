@@ -1,15 +1,6 @@
 import type { Nuxt } from '@nuxt/schema'
-import { addDevServerHandler, type Resolver } from '@nuxt/kit'
-import {
-  // addDevServerHandler,
-  // addDevServerHandler,
-  // addServerHandler,
-  // addServerImportsDir,
-  addPlugin,
-  addPluginTemplate, addServerHandler,
-  addServerPlugin,
-} from '@nuxt/kit'
-// import defu from 'defu'
+import type { Resolver } from '@nuxt/kit'
+import { addPlugin, addPluginTemplate } from '@nuxt/kit'
 import type { HttpClientHintsOptions } from '../types'
 import type { ResolvedHttpClientHintsOptions } from '../runtime/shared-types/types'
 
@@ -150,7 +141,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
 
   const useServerImages = serverImages
     ? serverImages === true
-      ? [/\.(png|jpeg|jpg|webp|avi)$/]
+      ? [/\.(png|jpeg|jpg|webp|avif|tiff|gif)$/]
       : Array.isArray(serverImages)
         ? serverImages
         : [serverImages]
@@ -159,31 +150,7 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
   const { serverImages: _, ...rest } = resolvedOptions
   nuxt.options.appConfig.httpClientHints = {
     ...rest,
-    serverImages: useServerImages ? useServerImages.map(r => r.source) : undefined,
-  }
-
-  if (useServerImages?.length) {
-    /* addServerHandler({
-      handler: resolver.resolve(runtimeDir, 'server/index'),
-      route: '',
-      middleware: true,
-      lazy: true,
-    }) */
-    // addServerPlugin(resolver.resolve(runtimeDir, 'server/plugin'))
-    /* addServerHandler({
-      handler: resolver.resolve(runtimeDir, 'server/index'),
-      route: '',
-      middleware: true,
-      lazy: true,
-    }) */
-    /* addDevServerHandler({
-      // @ts-expect-error ignore types
-      handler: resolver.resolve(runtimeDir, 'server/index'),
-      route: '',
-    }) */
-    // todo: check dev handlers and event handler in build + node ...
-    // there is no way to have the plugin working in dev mode: the dev handler called for jpg images
-    // running build + node ... the plugin is registered but the image event handler is not called for jpg images
+    serverImages: useServerImages ? useServerImages.map(r => r.source) : [],
   }
 
   addClientHintsPlugin('client')
