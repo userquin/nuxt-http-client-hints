@@ -1,6 +1,6 @@
 import type { parseUserAgent } from 'detect-browser-es'
-import { extractNetworkHints, NetworkHintsHeaders } from '../utils/network'
-import type { ResolvedHttpClientHintsOptions } from '../shared-types/types'
+import { extractNetworkHints, NetworkHintsHeaders } from 'http-client-hints/network'
+import type { ResolvedHttpClientHintsOptions } from 'http-client-hints'
 import { useHttpClientHintsState } from './utils'
 import { writeHeaders } from './headers'
 import { defineNuxtPlugin, useRequestHeaders } from '#imports'

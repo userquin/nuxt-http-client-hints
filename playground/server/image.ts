@@ -4,8 +4,8 @@ import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import { lazyEventHandler, eventHandler, sendStream } from 'h3'
 import sharp from 'sharp'
-import { extractImageClientHints } from '../../src/runtime/server/utils'
-import type { ResolvedHttpClientHintsOptions, ServerHttpClientHintsOptions } from '../../src/runtime/server/utils'
+import { extractImageClientHints } from 'http-client-hints/h3'
+import type { ResolvedHttpClientHintsOptions, ServerHttpClientHintsOptions } from 'http-client-hints/h3'
 // import { readAsset } from '#internal/nitro/virtual/public-assets-data'
 
 export default lazyEventHandler(() => {

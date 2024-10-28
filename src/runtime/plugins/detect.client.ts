@@ -1,5 +1,5 @@
 import { browserName, detect, asyncDetect, detectOS, parseUserAgent } from 'detect-browser-es'
-import type { UserAgentHints } from '../shared-types/types'
+import type { UserAgentHints } from 'http-client-hints'
 import { defineNuxtPlugin } from '#imports'
 import type { Plugin } from '#app'
 

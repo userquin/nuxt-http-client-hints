@@ -11,6 +11,9 @@ importers:
       detect-browser-es:
         specifier: ^0.1.1
         version: 0.1.1
+      http-client-hints:
+        specifier: ^0.0.1
+        version: 0.0.1(h3@1.13.0)
     devDependencies:
       '@nuxt/devtools':
         specifier: ^1.5.0
@@ -2791,6 +2794,14 @@ packages:
   html-tags@3.3.1:
     resolution: {integrity: sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==}
     engines: {node: '>=8'}
+
+  http-client-hints@0.0.1:
+    resolution: {integrity: sha512-8YyxZQ8j/TZkgQSEiKKnCILDpD/h+tyDmeKHACh4jh5mjQRuwGoytdPTjCe4BSOTmVHuqEs82uwLkH6Z6yBhrw==}
+    peerDependencies:
+      h3: ^1.13.0
+    peerDependenciesMeta:
+      h3:
+        optional: true
 
   http-errors@2.0.0:
     resolution: {integrity: sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==}
@@ -7722,6 +7733,12 @@ snapshots:
   hosted-git-info@2.8.9: {}
 
   html-tags@3.3.1: {}
+
+  http-client-hints@0.0.1(h3@1.13.0):
+    dependencies:
+      detect-browser-es: 0.1.1
+    optionalDependencies:
+      h3: 1.13.0
 
   http-errors@2.0.0:
     dependencies:

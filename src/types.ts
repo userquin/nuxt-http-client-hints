@@ -3,7 +3,7 @@ import type {
   NetworkHints,
   CriticalClientHintsConfiguration,
   UserAgentHints,
-} from './runtime/shared-types/types'
+} from 'http-client-hints'
 
 export type { DeviceHints, NetworkHints, CriticalClientHintsConfiguration, UserAgentHints }
 

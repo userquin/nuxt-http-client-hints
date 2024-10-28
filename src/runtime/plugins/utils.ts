@@ -1,8 +1,8 @@
 import type {
   HttpClientHintsState,
   ResolvedHttpClientHintsOptions,
-  ServerHttpClientHintsOptions,
-} from '../shared-types/types'
+} from 'http-client-hints'
+import type { ServerHttpClientHintsOptions } from 'http-client-hints/h3'
 import { useAppConfig, useState } from '#imports'
 
 export function useHttpClientHintsState() {

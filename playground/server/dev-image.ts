@@ -4,8 +4,8 @@ import { Readable } from 'node:stream'
 import { lazyEventHandler, eventHandler, sendStream } from 'h3'
 import sharp from 'sharp'
 import { useNitro } from '@nuxt/kit'
-import { extractImageClientHints } from '../../src/runtime/server/utils'
-import type { ResolvedHttpClientHintsOptions, ServerHttpClientHintsOptions } from '../../src/runtime/server/utils'
+import { extractImageClientHints } from 'http-client-hints/h3'
+import type { ResolvedHttpClientHintsOptions, ServerHttpClientHintsOptions } from 'http-client-hints/h3'
 
 export default lazyEventHandler(async () => {
   const nitroOptions = useNitro().options

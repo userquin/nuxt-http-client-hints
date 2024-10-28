@@ -1,6 +1,6 @@
 import type { parseUserAgent } from 'detect-browser-es'
-import { extractDeviceHints, HttpRequestHeaders } from '../utils/device'
-import type { ResolvedHttpClientHintsOptions } from '../shared-types/types'
+import { extractDeviceHints, DeviceHintsHeaders } from 'http-client-hints/device'
+import type { ResolvedHttpClientHintsOptions } from 'http-client-hints'
 import { useHttpClientHintsState } from './utils'
 import { writeHeaders } from './headers'
 import { defineNuxtPlugin, useRequestHeaders } from '#imports'
@@ -17,7 +17,7 @@ const plugin: Plugin = defineNuxtPlugin({
     const httpClientHints = ssrContext._httpClientHintsOptions as ResolvedHttpClientHintsOptions
     const userAgent = ssrContext._httpClientHintsUserAgent as ReturnType<typeof parseUserAgent>
     const state = useHttpClientHintsState()
-    const requestHeaders = useRequestHeaders<string>(HttpRequestHeaders)
+    const requestHeaders = useRequestHeaders<string>(DeviceHintsHeaders)
     state.value.device = extractDeviceHints(httpClientHints, requestHeaders, userAgent, writeHeaders)
   },
 })

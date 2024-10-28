@@ -15,6 +15,8 @@ export default createConfigForNuxt({
     ],
   },
 })
-  .append(
+  .append([{
+    ignores: ['server-utils.d.ts'],
+  }],
     // your custom flat config here...
   )

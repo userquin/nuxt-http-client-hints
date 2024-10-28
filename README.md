@@ -101,6 +101,8 @@ or in your modules, composables, or other plugins:
 const clientHints = useNuxtApp().$httpClientHints
 ```
 
+You can also use this module with [HTTP Client Hints for H3](https://github.com/userquin/http-client-hints/blob/main/src/h3.ts) (`http-client-hints/h3`) to add a custom [Nitro](https://github.com/unjs/nitro) image event handler to send back to the browser an optimized image from the original one. Check the [playground](https://github.com/userquin/nuxt-http-client-hints/tree/main/playground/server) server folder for an example using Nitro server handler in dev and production mode with [sharp](https://github.com/lovell/sharp).
+
 That's it! You can now use HTTP Client Hints in your Nuxt app ✨
 
 You can check the source code or the [JSDocs](https://www.jsdocs.io/package/nuxt-http-client-hints) for more information.

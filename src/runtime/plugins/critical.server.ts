@@ -1,6 +1,6 @@
 import type { parseUserAgent } from 'detect-browser-es'
-import { CriticalHintsHeaders, extractCriticalHints } from '../utils/critical'
-import type { ResolvedHttpClientHintsOptions } from '../shared-types/types'
+import { CriticalHintsHeaders, extractCriticalHints } from 'http-client-hints/critical'
+import type { ResolvedHttpClientHintsOptions } from 'http-client-hints'
 import { writeHeaders } from './headers'
 import { useHttpClientHintsState } from './utils'
 import { defineNuxtPlugin, useCookie, useRequestHeaders } from '#imports'

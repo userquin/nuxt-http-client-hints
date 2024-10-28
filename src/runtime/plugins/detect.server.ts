@@ -6,8 +6,8 @@ import {
   parseUserAgent,
 } from 'detect-browser-es'
 import { appendHeader } from 'h3'
-import type { ResolvedHttpClientHintsOptions, UserAgentHints } from '../shared-types/types'
-import { extractBrowser } from '../utils/detect'
+import type { ResolvedHttpClientHintsOptions, UserAgentHints } from 'http-client-hints'
+import { extractBrowserHints } from 'http-client-hints/detect'
 import { useHttpClientHintsState } from './utils'
 import {
   defineNuxtPlugin,
@@ -30,7 +30,7 @@ const plugin: Plugin = defineNuxtPlugin({
 
     const userAgentHeader = requestHeaders['user-agent']
 
-    const browser = await extractBrowser(
+    const browser = await extractBrowserHints(
       httpClientHints,
       requestHeaders,
       userAgentHeader,

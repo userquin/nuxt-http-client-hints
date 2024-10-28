@@ -1,8 +1,8 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { Resolver } from '@nuxt/kit'
 import { addPlugin, addPluginTemplate } from '@nuxt/kit'
+import type { ResolvedHttpClientHintsOptions } from 'http-client-hints'
 import type { HttpClientHintsOptions } from '../types'
-import type { ResolvedHttpClientHintsOptions } from '../runtime/shared-types/types'
 
 type PluginType = 'detect' | 'user-agent' | 'network' | 'device' | 'critical'
 
