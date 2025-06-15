@@ -51,7 +51,8 @@ export function configure(ctx: HttpClientHintsContext, nuxt: Nuxt) {
     }
   }
 
-  const clientOnly = nuxt.options._generate || !nuxt.options.ssr
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clientOnly = nuxt.options.nitro.static || (nuxt.options as any)._generate /* TODO: remove in future */ || !nuxt.options.ssr
 
   // we register the client detector only if needed and not in SSR mode
   if ((options.detectBrowser || options.detectOS || resolvedOptions.userAgent.length) && clientOnly) {
