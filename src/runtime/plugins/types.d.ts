@@ -1,6 +1,6 @@
 import type { DeepReadonly } from '@vue/reactivity'
 import type { Browser, asyncDetect, detect, detectOS, parseUserAgent } from 'detect-browser-es'
-import type { HttpClientHintsState, UserAgentDataHints } from '../shared-types/types'
+import type { HttpClientHintsState, UserAgentDataHints } from 'http-client-hints'
 
 declare module '#app' {
   interface NuxtApp {

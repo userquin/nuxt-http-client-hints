@@ -3,7 +3,7 @@ import type {
   NetworkHints,
   CriticalClientHintsConfiguration,
   UserAgentHints,
-} from './runtime/shared-types/types'
+} from 'http-client-hints'
 
 export type { DeviceHints, NetworkHints, CriticalClientHintsConfiguration, UserAgentHints }
 
@@ -38,4 +38,12 @@ export interface HttpClientHintsOptions {
    * @see https://wicg.github.io/responsive-image-client-hints
    */
   critical?: CriticalClientHintsConfiguration
+  /**
+   * Enable server images (expose Nitro event handler)?.
+   *
+   * The Nitro event handler will export the `httpClientHints` object in the event context.
+   *
+   * If set to `true`, the event handler will apply to `/\.(png|jpeg|jpg|webp|avi)$/`.
+   */
+  serverImages?: true | RegExp | RegExp[]
 }

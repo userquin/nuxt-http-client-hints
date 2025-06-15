@@ -1,9 +1,9 @@
 import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { HookResult } from '@nuxt/schema'
+import type { HttpClientHintsState } from 'http-client-hints'
 import { version } from '../package.json'
 import type { HttpClientHintsOptions as ModuleOptions } from './types'
 import { configure } from './utils/configuration'
-import type { HttpClientHintsState } from './runtime/shared-types/types'
 
 export type { ModuleOptions }
 
@@ -33,13 +33,12 @@ export default defineNuxtModule<ModuleOptions>({
         logger: useLogger(`nuxt:${NAME}`),
         options,
         resolvedOptions: {
-          detectBrowser: false,
-          detectOS: false,
+          detectBrowser: options.detectBrowser ?? false,
+          detectOS: options.detectOS ?? false,
           userAgent: [],
           network: [],
           device: [],
         },
-        clientDependsOn: [],
         serverDependsOn: [],
       },
       nuxt,

@@ -2,7 +2,7 @@
   "name": "nuxt-http-client-hints",
   "type": "module",
   "version": "0.0.2",
-  "packageManager": "pnpm@9.12.1",
+  "packageManager": "pnpm@9.12.3",
   "description": "Nuxt HTTP Client Hints",
   "author": "userquin <userquin@gmail.com>",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "Device Client Hints",
     "Network Client Hints",
     "Browser detection",
-    "nuxt module"
+    "Nuxt module"
   ],
   "sideEffects": false,
   "exports": {
@@ -44,10 +44,11 @@
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.13.2",
-    "detect-browser-es": "^0.1.1"
+    "detect-browser-es": "^0.1.1",
+    "http-client-hints": "^0.0.1"
   },
   "devDependencies": {
+    "@nuxt/kit": "^3.13.2",
     "@nuxt/devtools": "^1.5.0",
     "@nuxt/eslint-config": "^0.5.7",
     "@nuxt/module-builder": "^0.8.4",

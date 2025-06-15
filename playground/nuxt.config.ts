@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['../src/module'],
 
+  future: {
+    compatibilityVersion: 4,
+  },
+
   httpClientHints: {
     detectBrowser: true,
     detectOS: 'windows-11',
@@ -14,6 +18,21 @@ export default defineNuxtConfig({
       viewportSize: true,
       prefersColorScheme: true,
     },
+    serverImages: true,
+  },
+
+  nitro: {
+    /* handlers: [
+      {
+        middleware: true,
+        // route: '',
+        handler: './server/image',
+      },
+    ], */
+    /* devHandlers: [{
+      route: '',
+      handler: DevImage,
+    }], */
   },
 
 })
